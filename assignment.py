@@ -29,7 +29,7 @@ def main():
     mainSurface = pygame.display.set_mode((surfaceSize, surfaceSize))
     
     #--Variables--
-    programState = 'Player 1 Turn'
+    programState = 'Player 1 Continue'
     
     #Colours:
     white = (255, 255, 255)
@@ -49,15 +49,31 @@ def main():
     piecePos = [108+tileWidth, 108]
     pieceRadius = 30
     
+    #Continue Button Variables
+    contButtonRect = [160, 420, 400, 50]
+    
     #--Object Classes--
-    class buttonTile(): #Class object for tiles and buttons
+    
+    class button(): #Class object for tiles and buttons
         def __init__(self, inputColour, inputRect):
             self.rect = inputRect
             self.colour = inputColour
             
         def drawTile(self, inputSurface):
+            '''
+            Basic function that draws a singular tile on the surface given
+            
+            Parameters
+            ----------
+            inputSurface : (int, int, int)
+                the surface at which the tile is drawn
+                
+            Returns
+            -------
+            None
+            '''
             pygame.draw.rect(inputSurface, self.colour, self.rect)
-        
+            
         #Collide function, checks wheter or not the input point is within the button's boundaries (Function from my mini-game assignment)
         def tileCollidePoint(self, inPnt):
             '''
@@ -78,9 +94,55 @@ def main():
             boolean
                 The statement regarding if the button was clicked or not
             '''
-            
             if inPnt[0] > self.rect[0] and inPnt[0] < self.rect[0]+self.rect[2] and inPnt[1] < self.rect[1]+self.rect[3] and inPnt[1] > self.rect[1]:#Is the inpt colliding with button?
                 if ev.type == pygame.MOUSEBUTTONDOWN: #Is there a mouse event?
+                    return True
+            else: return False
+            
+    
+    class tile(): #Class object for tiles and buttons
+        def __init__(self, inputColour, inputRect):
+            self.rect = inputRect
+            self.colour = inputColour
+            
+        def drawTile(self, inputSurface):
+            '''
+            Basic function that draws a singular tile on the surface given
+            
+            Parameters
+            ----------
+            inputSurface : (int, int, int)
+                the surface at which the tile is drawn
+                
+            Returns
+            -------
+            None
+            '''
+            pygame.draw.rect(inputSurface, self.colour, self.rect)
+        
+        #Collide function, checks wheter or not the input point is within the button's boundaries (Function from my mini-game assignment)
+        def tileCollidePoint(self, inPnt):
+            '''
+            Function that returns True or False depending on whether or not the if statements are fullfilled.
+              
+            Check if colour of tile is correct (grey). Takes the inPnt parameter, if it is within the boundaries of the button
+            class's variables, checks if there is a mouse input & returns True if so
+            (pressing button), else return False (not pressing button)
+
+
+            Parameters
+            ----------
+            inPnt : int
+                positional list of X & Y values used to be checked in if statement
+              
+            Returns
+            -------
+            boolean
+                The statement regarding if the button was clicked or not
+            '''
+            if self.colour == grey:
+                if inPnt[0] > self.rect[0] and inPnt[0] < self.rect[0]+self.rect[2] and inPnt[1] < self.rect[1]+self.rect[3] and inPnt[1] > self.rect[1]:#Is the inpt colliding with button?
+                    if ev.type == pygame.MOUSEBUTTONDOWN: #Is there a mouse event?
                         return True
             else: return False
      
@@ -91,13 +153,45 @@ def main():
             self.radius = inputRadius
             
         def drawPiece(self, inputSurface):
-            pygame.draw.circle(inputSurface, self.colour, self.pos, self.radius)
-        
+            '''
+            Basic function that draws a singular piece on the surface given
+            
+            Parameters
+            ----------
+            inputSurface : (int, int, int)
+                the surface at which the piece is drawn
+                
+            Returns
+            -------
+            None
+            '''
+            pygame.draw.circle(inputSurface, self.colour, [ self.pos[0], self.pos[1] ], self.radius)
+            
+        def distFromPoints(point):# Function from python notes, circle-button collision detection. Edited to better reflect the pieces
+            '''
+            This function calculationes the distance between two points given by a set of tuples (x1,y1) and (x2,y2)
+            
+            Parameters
+            ----------
+            point : float
+                The point to compare
+                
+            Returns
+            float
+                The distance between the two points
+            '''
+            distance = math.sqrt( ((point[0]-self.pos[0])**2)+((point[1]-self.pos[1])**2) )
+            
+            return distance    
     
     
     
     #------Object Definitions------
     
+    #--Buttons--
+    
+    playerOneContinue = button(green, contButtonRect)
+    playerTwoContinue = button(green, contButtonRect)
     
     #--Tiles--
     
@@ -108,10 +202,10 @@ def main():
         
         for x in range(0, 8, 1): #For loop that repeats 8 times, the number of columns
             if isTileWhite == True: # Add a white tile if True
-                tiles.append(buttonTile( white, [tilePos[0], tilePos[1], tileWidth, tileHeight] ))
+                tiles.append(tile( white, [tilePos[0], tilePos[1], tileWidth, tileHeight] ))
                 tilePos[0] += tileWidth
-            elif isTileWhite == False: # Add a red tile if False
-                tiles.append(buttonTile( grey, [tilePos[0], tilePos[1], tileWidth, tileHeight] ))
+            elif isTileWhite == False: # Add a grey tile if False
+                tiles.append(tile( grey, [tilePos[0], tilePos[1], tileWidth, tileHeight] ))
                 tilePos[0] += tileWidth
             isTileWhite = not isTileWhite # Alternate the colour along the x axis
             
@@ -123,20 +217,79 @@ def main():
     
     pieces = []
     
-    for x in range(0, 4, 1):
-        pieces.append(piece (red, piecePos, pieceRadius) )
-        piecePos[0] += 36
+    def loadPieces(pieceColour, piecePos): #Function to add pieces to piece list
+        for y in range(0, 2, 1):
+            for x in range(0, 4, 1):
+                pieces.append(piece (pieceColour, [ piecePos[0], piecePos[1] ], pieceRadius) )
+                piecePos[0] += tileWidth*2
+            piecePos[1] += tileHeight
+            piecePos[0] -= tileWidth*9
+        return pieces
     
-        print(piecePos)
+    loadPieces(red, piecePos)#Red pieces
+    piecePos[1]+=tileWidth*4 #Reset the piecePos variables
+    piecePos[0]+=tileWidth*2
+    loadPieces(black, piecePos)#Black pieces
+
     
     while True:
         ev = pygame.event.poll()    # Look for any event
         if ev.type == pygame.QUIT:  # Window close button clicked?
             break                   #   ... leave game loop
         
+        mousePos = pygame.mouse.get_pos()#Mouse position for buttons
         
-        if programState == 'Player 1 Turn':
+        if programState == 'Player 1 Continue':
+            # Update your game objects and data structures here...
             
+            if playerOneContinue.tileCollidePoint(mousePos):
+                programState = 'Player 1 Turn'
+            
+            #-----Drawing-----
+            # So first fill everything with the background color
+            mainSurface.fill((0, 0, 0))
+            
+            playerOneContinue.drawTile(mainSurface)
+            
+            
+        elif programState == 'Player 1 Turn':
+            # Update your game objects and data structures here...
+            
+            for i in range(0, len(tiles), 1):
+                if tiles[i].tileCollidePoint(mousePos):
+                    print('aaaaaaaaaa')
+            
+            #for i in range(0, len(pieces), 1):
+                #if pieces[i].distFromPoints( [mousePos[0], mousePos[1]] ) < pieceRadius:
+                    #print('aaaaa')
+
+            #-----Drawing-----
+            # So first fill everything with the background color
+            mainSurface.fill((0, 0, 0))
+            
+            
+            for i in range(0, len(tiles), 1): # Draw tiles
+                tiles[i].drawTile(mainSurface)
+            
+            for i in range(0, len(pieces), 1): # Draw pieces
+                pieces[i].drawPiece(mainSurface)
+        
+        
+        elif programState == 'Player 2 Continue':
+            # Update your game objects and data structures here...
+            
+            if playerTwoContinue.tileCollidePoint(mousePos):
+                programState = 'Player 2 Turn'
+            
+            
+            #-----Drawing-----
+            # So first fill everything with the background color
+            mainSurface.fill((0, 0, 0))
+            
+            playerTwoContinue.drawTile(mainSurface)
+        
+        
+        elif programState == 'Player 2 Turn':
             # Update your game objects and data structures here...
             
             if ev.type == pygame.MOUSEBUTTONDOWN:
@@ -145,7 +298,7 @@ def main():
                         print('aaaaaaaaaa')
                         
             mousePos = pygame.mouse.get_pos()#Mouse position for buttons
-
+            
             #-----Drawing-----
             # So first fill everything with the background color
             mainSurface.fill((0, 0, 0))
