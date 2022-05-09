@@ -4,7 +4,7 @@
 #
 # Author:      Gavin B.
 # Created:     04-May-2022
-# Updated:     13-Sept-2020
+# Updated:     08-May-2022
 #-----------------------------------------------------------------------------
 #I think this project deserves a level XXXXXX because ...
 #
@@ -16,7 +16,7 @@
 
 import pygame
 import random
-
+import math
     
 def main():
     """ Set up the game and run the main game loop """
@@ -105,6 +105,9 @@ def main():
             self.rect = inputRect
             self.colour = inputColour
             
+        def clicked(self, inputColour):
+            self.colour = inputColour
+        
         def drawTile(self, inputSurface):
             '''
             Basic function that draws a singular tile on the surface given
@@ -167,13 +170,13 @@ def main():
             '''
             pygame.draw.circle(inputSurface, self.colour, [ self.pos[0], self.pos[1] ], self.radius)
             
-        def distFromPoints(point):# Function from python notes, circle-button collision detection. Edited to better reflect the pieces
+        def distFromPoints(self, point):# Function from python notes, circle-button collision detection. Edited to better reflect the pieces
             '''
             This function calculationes the distance between two points given by a set of tuples (x1,y1) and (x2,y2)
             
             Parameters
             ----------
-            point : float
+            point : (float, float)
                 The point to compare
                 
             Returns
@@ -192,6 +195,7 @@ def main():
     
     playerOneContinue = button(green, contButtonRect)
     playerTwoContinue = button(green, contButtonRect)
+    
     
     #--Tiles--
     
@@ -212,6 +216,7 @@ def main():
         tilePos[1] += tileHeight #Add the y for the next line of tiles
         tilePos[0] -= tileWidth*8 # Decrease the x of the tiles by 8 times the width of one tile (the length of the board)
         isTileWhite = not isTileWhite # Alternate the colour along the y axis (create grid pattern instead of straight red & white lines)
+    
     
     #--Pieces--
     
@@ -255,14 +260,29 @@ def main():
         elif programState == 'Player 1 Turn':
             # Update your game objects and data structures here...
             
+            if ev.type == pygame.KEYDOWN:
+                for i in range(0, len(tiles), 1):
+                    tiles[i].clicked(grey)
+            
             for i in range(0, len(tiles), 1):
                 if tiles[i].tileCollidePoint(mousePos):
-                    print('aaaaaaaaaa')
+                    print('grey tile clicked')
+                    tiles[i].clicked(green)
+                    #tiles[i-9].clicked(green)
+                    #tiles[i-7].clicked(green)
             
-            #for i in range(0, len(pieces), 1):
-                #if pieces[i].distFromPoints( [mousePos[0], mousePos[1]] ) < pieceRadius:
-                    #print('aaaaa')
-
+            if ev.type == pygame.MOUSEBUTTONDOWN: # Is there a mouse event
+                for i in range(len(pieces)-8, len(pieces)-4, 1): # Check all pieces with their indexes between 8 and 16 (black pieces)
+                    if pieces[i].distFromPoints(mousePos) < pieceRadius: # Has a piece been clicked?
+                        print('black piece clicked')
+                        #**Cannot use this for loop alone, use object class - create code to find out what diagonal the piece is at (much simpler)**
+#                             if (2*i + 24) % 8 != 0:
+#                                 tiles[(2*i + 24)].clicked(green)
+#                                 print('aa')
+#                             if (2*i + 26) % 8 != 0:
+#                                 tiles[(2*i + 26)].clicked(green)
+#                                 print('aa')
+                                
             #-----Drawing-----
             # So first fill everything with the background color
             mainSurface.fill((0, 0, 0))
@@ -292,10 +312,14 @@ def main():
         elif programState == 'Player 2 Turn':
             # Update your game objects and data structures here...
             
-            if ev.type == pygame.MOUSEBUTTONDOWN:
-                for i in range(0, len(tiles), 1):
-                    if tiles[i].tileCollidePoint(mousePos):
-                        print('aaaaaaaaaa')
+            for i in range(0, len(tiles), 1):
+                if tiles[i].tileCollidePoint(mousePos):
+                    print('grey tile clicked')
+            
+            if ev.type == pygame.MOUSEBUTTONDOWN: # Is there a mouse event?
+                for i in range(0, len(pieces)-8, 1): # Check all tiles with their indexes between 0 and 8 (red pieces)
+                    if pieces[i].distFromPoints(mousePos) < pieceRadius: # Has a piece been clicked?
+                        print('red piece clicked')
                         
             mousePos = pygame.mouse.get_pos()#Mouse position for buttons
             
