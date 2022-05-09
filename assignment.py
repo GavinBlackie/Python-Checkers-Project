@@ -48,9 +48,15 @@ def main():
     #Piece Variables
     piecePos = [108+tileWidth, 108]
     pieceRadius = 30
+    pieceXPositions = (180, 324, 468, 612, 108, 252, 396, 540) #List of x values to help determine which diagonal part of the board the piece is on
     
     #Continue Button Variables
     contButtonRect = [160, 420, 400, 50]
+    
+    #Fonts and Text
+    titleFont = pygame.font.SysFont("Times New Roman", 65)
+    buttonFont = pygame.font.SysFont("Times New Roman", 26)
+    playerTurn = '1'
     
     #--Object Classes--
     
@@ -180,15 +186,40 @@ def main():
                 The point to compare
                 
             Returns
+            -------
             float
                 The distance between the two points
             '''
             distance = math.sqrt( ((point[0]-self.pos[0])**2)+((point[1]-self.pos[1])**2) )
             
             return distance    
-    
-    
-    
+        
+        def whichDiagonal(self, lifeStatus):
+            '''
+            Basic function that takes in a boolean to say if the piece is alive, if so
+            it will check a list to see which diagonal part of the board the piece is on.
+            
+            Parameters
+            ----------
+            lifeStatus : boolean
+                The statement on if the tile is alive
+            
+            Returns
+            -------
+            boolean
+                Statement on which diagonal the piece is on
+            
+            '''
+            if lifeStatus == True:
+                for i in range(0, len(pieceXPositions)-4, 1):
+                    if self.pos[0] == pieceXPositions[i]:
+                        return True
+                    
+                for i in range(4, len(pieceXPositions), 1):
+                    if self.pos[0] == pieceXPositions[i]:
+                        return False
+                    
+
     #------Object Definitions------
     
     #--Buttons--
@@ -243,9 +274,12 @@ def main():
             break                   #   ... leave game loop
         
         mousePos = pygame.mouse.get_pos()#Mouse position for buttons
+        renderedTurnContinue = buttonFont.render('Take Turn!', 12, black)
         
         if programState == 'Player 1 Continue':
             # Update your game objects and data structures here...
+            playerTurn = '1'
+            renderedTurnDeclare = titleFont.render(f"Player {playerTurn}'s Turn", 12, white)
             
             if playerOneContinue.tileCollidePoint(mousePos):
                 programState = 'Player 1 Turn'
@@ -255,7 +289,8 @@ def main():
             mainSurface.fill((0, 0, 0))
             
             playerOneContinue.drawTile(mainSurface)
-            
+            mainSurface.blit(renderedTurnDeclare, (160, 120))
+            mainSurface.blit(renderedTurnContinue, (300, 430))
             
         elif programState == 'Player 1 Turn':
             # Update your game objects and data structures here...
@@ -266,22 +301,29 @@ def main():
             
             for i in range(0, len(tiles), 1):
                 if tiles[i].tileCollidePoint(mousePos):
-                    print('grey tile clicked')
                     tiles[i].clicked(green)
-                    #tiles[i-9].clicked(green)
-                    #tiles[i-7].clicked(green)
             
             if ev.type == pygame.MOUSEBUTTONDOWN: # Is there a mouse event
-                for i in range(len(pieces)-8, len(pieces)-4, 1): # Check all pieces with their indexes between 8 and 16 (black pieces)
+                for i in range(len(pieces)-8, len(pieces), 1): # Check all pieces with their indexes between 8 and 16 (black pieces)
                     if pieces[i].distFromPoints(mousePos) < pieceRadius: # Has a piece been clicked?
-                        print('black piece clicked')
-                        #**Cannot use this for loop alone, use object class - create code to find out what diagonal the piece is at (much simpler)**
-#                             if (2*i + 24) % 8 != 0:
-#                                 tiles[(2*i + 24)].clicked(green)
-#                                 print('aa')
-#                             if (2*i + 26) % 8 != 0:
-#                                 tiles[(2*i + 26)].clicked(green)
-#                                 print('aa')
+                        
+                        #If/Elif statement to find out which diagonal the piece is on
+                        if pieces[i].whichDiagonal(True) == True: #Is the piece on the "True" diagonal
+                            print('true diag')
+                            
+                            tiles[2*i + 24].clicked(green) #Highlight tile on the left
+                            
+                            if (2*i + 26) < 47: #Highlight tile on the right, only if it does not go over the border
+                                tiles[2*i + 26].clicked(green)
+                                
+                        elif pieces[i].whichDiagonal(True) == False: #Is the piece on the "False" diagonal
+                            print('false diag')
+                            
+                            if (2*i + 23) > 47: #Highlight the tile on the left, only if it does not go over the border
+                                tiles[2*i + 23].clicked(green)
+                                
+                            tiles[2*i + 25].clicked(green) #Highlight the right tile
+                        
                                 
             #-----Drawing-----
             # So first fill everything with the background color
@@ -297,6 +339,8 @@ def main():
         
         elif programState == 'Player 2 Continue':
             # Update your game objects and data structures here...
+            playerTurn = '2'
+            renderedTurnDeclare = titleFont.render(f"Player {playerTurn}'s Turn", 12, red)
             
             if playerTwoContinue.tileCollidePoint(mousePos):
                 programState = 'Player 2 Turn'
@@ -307,10 +351,16 @@ def main():
             mainSurface.fill((0, 0, 0))
             
             playerTwoContinue.drawTile(mainSurface)
-        
+            mainSurface.blit(renderedTurnDeclare, (160, 120))
+            mainSurface.blit(renderedTurnContinue, (300, 430))
         
         elif programState == 'Player 2 Turn':
             # Update your game objects and data structures here...
+            
+            if ev.type == pygame.KEYDOWN:
+                for i in range(0, len(tiles), 1):
+                    tiles[i].clicked(grey)
+            
             
             for i in range(0, len(tiles), 1):
                 if tiles[i].tileCollidePoint(mousePos):
@@ -319,8 +369,24 @@ def main():
             if ev.type == pygame.MOUSEBUTTONDOWN: # Is there a mouse event?
                 for i in range(0, len(pieces)-8, 1): # Check all tiles with their indexes between 0 and 8 (red pieces)
                     if pieces[i].distFromPoints(mousePos) < pieceRadius: # Has a piece been clicked?
-                        print('red piece clicked')
                         
+                        #If/Elif statement to find out which diagonal the piece is on
+                        if pieces[i].whichDiagonal(True) == True: #Is the piece on the "True" diagonal
+                            print('true diag')
+                            
+                            tiles[2*i - 24].clicked(green) #Highlight tile on the right
+                            
+                            if (2*i + 26) < 47: #Highlight tile on the left, only if it does not go over the border
+                                tiles[2*i + 26].clicked(green)
+                                
+                        elif pieces[i].whichDiagonal(True) == False: #Is the piece on the "False" diagonal
+                            print('false diag')
+                            
+                            if (2*i + 23) > 47: #Highlight the tile on the right, only if it does not go over the border
+                                tiles[2*i + 23].clicked(green)
+                                
+                            tiles[2*i + 25].clicked(green) #Highlight the left tile
+                            
             mousePos = pygame.mouse.get_pos()#Mouse position for buttons
             
             #-----Drawing-----
