@@ -49,6 +49,7 @@ def main():
     piecePos = [108+tileWidth, 108]
     pieceRadius = 30
     pieceXPositions = (180, 324, 468, 612, 108, 252, 396, 540) #List of x values to help determine which diagonal part of the board the piece is on
+    pieceChosen = False
     
     #Continue Button Variables
     contButtonRect = [160, 420, 400, 50]
@@ -134,7 +135,7 @@ def main():
             '''
             Function that returns True or False depending on whether or not the if statements are fullfilled.
               
-            Check if colour of tile is correct (grey). Takes the inPnt parameter, if it is within the boundaries of the button
+            Check if colour of tile is correct (grey or green). Takes the inPnt parameter, if it is within the boundaries of the button
             class's variables, checks if there is a mouse input & returns True if so
             (pressing button), else return False (not pressing button)
 
@@ -149,12 +150,13 @@ def main():
             boolean
                 The statement regarding if the button was clicked or not
             '''
-            if self.colour == grey:
+            if self.colour == grey or self.colour == green:
                 if inPnt[0] > self.rect[0] and inPnt[0] < self.rect[0]+self.rect[2] and inPnt[1] < self.rect[1]+self.rect[3] and inPnt[1] > self.rect[1]:#Is the inpt colliding with button?
                     if ev.type == pygame.MOUSEBUTTONDOWN: #Is there a mouse event?
                         return True
             else: return False
-     
+            
+             
     class piece():
         def __init__(self, inputColour, inputPos, inputRadius):
             self.pos = inputPos
@@ -218,8 +220,27 @@ def main():
                 for i in range(4, len(pieceXPositions), 1):
                     if self.pos[0] == pieceXPositions[i]:
                         return False
-                    
-
+            
+        def pieceMovement(self, direction, pieceColour):
+            
+            if pieceColour == 'black':
+                if direction == 'right':
+                     self.pos[0] += tileWidth
+                     self.pos[1] -= tileHeight
+                     
+                elif direction == 'left':
+                     self.pos[0] -= tileWidth
+                     self.pos[1] -= tileHeight
+                     
+            elif pieceColour == 'red':
+                if direction == 'right':
+                    self.pos[0] += tileWidth
+                    self.pos[1] += tileHeight
+                elif direction == 'left':
+                    self.pos[0] -= tileWidth
+                    self.pos[1] -= tileHeight
+                 
+        
     #------Object Definitions------
     
     #--Buttons--
@@ -279,6 +300,8 @@ def main():
         if programState == 'Player 1 Continue':
             # Update your game objects and data structures here...
             playerTurn = '1'
+            right = 0
+            left = 0
             renderedTurnDeclare = titleFont.render(f"Player {playerTurn}'s Turn", 12, white)
             
             if playerOneContinue.tileCollidePoint(mousePos):
@@ -294,37 +317,66 @@ def main():
             
         elif programState == 'Player 1 Turn':
             # Update your game objects and data structures here...
-            
-            if ev.type == pygame.KEYDOWN:
-                for i in range(0, len(tiles), 1):
-                    tiles[i].clicked(grey)
-            
-            for i in range(0, len(tiles), 1):
-                if tiles[i].tileCollidePoint(mousePos):
-                    tiles[i].clicked(green)
-            
+
             if ev.type == pygame.MOUSEBUTTONDOWN: # Is there a mouse event
-                for i in range(len(pieces)-8, len(pieces), 1): # Check all pieces with their indexes between 8 and 16 (black pieces)
-                    if pieces[i].distFromPoints(mousePos) < pieceRadius: # Has a piece been clicked?
-                        
-                        #If/Elif statement to find out which diagonal the piece is on
-                        if pieces[i].whichDiagonal(True) == True: #Is the piece on the "True" diagonal
-                            print('true diag')
+                if pieceChosen == False:
+                    for i in range(len(pieces)-8, len(pieces), 1): # Check all pieces with their indexes between 8 and 16 (black pieces)
+                        if pieces[i].distFromPoints(mousePos) < pieceRadius: # Has a piece been clicked?
                             
-                            tiles[2*i + 24].clicked(green) #Highlight tile on the left
-                            
-                            if (2*i + 26) < 47: #Highlight tile on the right, only if it does not go over the border
-                                tiles[2*i + 26].clicked(green)
+                            # If/Elif statement to find out which diagonal the piece is on
+                            # The 2*i + 'number' statements are a y = mx+b format of different graphs of the relationship between tile and piece indexes
+                            if pieces[i].whichDiagonal(True) == True: #Is the piece on the "True" diagonal
+                                pieceChosen = True #Declare that a piece has been chosen
                                 
-                        elif pieces[i].whichDiagonal(True) == False: #Is the piece on the "False" diagonal
-                            print('false diag')
-                            
-                            if (2*i + 23) > 47: #Highlight the tile on the left, only if it does not go over the border
-                                tiles[2*i + 23].clicked(green)
+                                right = 2*i + 26
+                                left = 2*i + 24
+                                pieceIndex = i
                                 
-                            tiles[2*i + 25].clicked(green) #Highlight the right tile
-                        
+#                                 tiles[2*i + 24].clicked(green) #Highlight tile on the left
                                 
+#                                 if right!=47 and right!=39: #Highlight tile on the right, only if it does not go over the border
+#                                     tiles[2*i + 26].clicked(green)
+#                                 else:
+#                                     right = 0
+                                    
+                            elif pieces[i].whichDiagonal(True) == False: #Is the piece on the "False" diagonal
+                                pieceChosen = True #Declare that a piece has been chosen
+                                
+                                right = 2*i + 25
+                                left = 2*i + 23
+                                print(right)
+                                pieceIndex = i
+                                
+                                
+#                                 if (2*i + 23) > 47: #Highlight the tile on the left, only if it does not go over the border
+#                                     tiles[2*i + 23].clicked(green)
+#                                     left = 2*i + 23
+#                                     pieceIndex = i
+#                                 else:
+#                                     right = 0
+#                                     pieceIndex = i
+                                    
+#                                 tiles[2*i + 25].clicked(green) #Highlight the right tile
+                                
+                                
+            if pieceChosen == True: # Has a piece been chosen?
+                if tiles[right].tileCollidePoint(mousePos): # Is the mouse clicking on the right highlighted tile? If so, move the piece right and reset
+                    pieces[pieceIndex].pieceMovement('right', 'black')
+#                     if right != 0: #Check that the 'right' tile does not go over the border, right value will only be 0 if so (same logic applies for left as well)
+#                         tiles[right].clicked(grey)
+#                     if left != 0:
+#                         tiles[left].clicked(grey)
+                    programState = 'Player 1 Continue'
+                    pieceChosen = False
+                elif tiles[left].tileCollidePoint(mousePos): # Is the mouse clicking on the left highlighted tile? If so, move the piece left and reset
+                    pieces[pieceIndex].pieceMovement('left', 'black')
+#                     if right != 0:
+#                         tiles[right].clicked(grey)
+#                     if left != 0:
+#                         tiles[left].clicked(grey)
+                    programState = 'Player 1 Continue'
+                    pieceChosen = False
+                    
             #-----Drawing-----
             # So first fill everything with the background color
             mainSurface.fill((0, 0, 0))
@@ -356,36 +408,6 @@ def main():
         
         elif programState == 'Player 2 Turn':
             # Update your game objects and data structures here...
-            
-            if ev.type == pygame.KEYDOWN:
-                for i in range(0, len(tiles), 1):
-                    tiles[i].clicked(grey)
-            
-            
-            for i in range(0, len(tiles), 1):
-                if tiles[i].tileCollidePoint(mousePos):
-                    print('grey tile clicked')
-            
-            if ev.type == pygame.MOUSEBUTTONDOWN: # Is there a mouse event?
-                for i in range(0, len(pieces)-8, 1): # Check all tiles with their indexes between 0 and 8 (red pieces)
-                    if pieces[i].distFromPoints(mousePos) < pieceRadius: # Has a piece been clicked?
-                        
-                        #If/Elif statement to find out which diagonal the piece is on
-                        if pieces[i].whichDiagonal(True) == True: #Is the piece on the "True" diagonal
-                            print('true diag')
-                            
-                            tiles[2*i - 24].clicked(green) #Highlight tile on the right
-                            
-                            if (2*i + 26) < 47: #Highlight tile on the left, only if it does not go over the border
-                                tiles[2*i + 26].clicked(green)
-                                
-                        elif pieces[i].whichDiagonal(True) == False: #Is the piece on the "False" diagonal
-                            print('false diag')
-                            
-                            if (2*i + 23) > 47: #Highlight the tile on the right, only if it does not go over the border
-                                tiles[2*i + 23].clicked(green)
-                                
-                            tiles[2*i + 25].clicked(green) #Highlight the left tile
                             
             mousePos = pygame.mouse.get_pos()#Mouse position for buttons
             
