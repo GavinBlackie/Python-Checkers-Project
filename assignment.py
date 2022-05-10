@@ -43,10 +43,10 @@ def main():
     tilePos = [72, 72]
     tileWidth = 72
     tileHeight = 72
-    isTileWhite = True
+    tileShift = False
     
     #Piece Variables
-    piecePos = [108+tileWidth, 108]
+    piecePos = [144-tileWidth/2, 108]
     pieceRadius = 30
     pieceXPositions = (180, 324, 468, 612, 108, 252, 396, 540) #List of x values to help determine which diagonal part of the board the piece is on
     pieceChosen = False
@@ -177,7 +177,13 @@ def main():
             None
             '''
             pygame.draw.circle(inputSurface, self.colour, [ self.pos[0], self.pos[1] ], self.radius)
+        
+        def getPos(self):
+            '''
+            '''
             
+            return self.pos
+        
         def distFromPoints(self, point):# Function from python notes, circle-button collision detection. Edited to better reflect the pieces
             '''
             This function calculationes the distance between two points given by a set of tuples (x1,y1) and (x2,y2)
@@ -196,10 +202,10 @@ def main():
             
             return distance    
         
-        def whichDiagonal(self, lifeStatus):
+        def whichDiagonal(self):
             '''
-            Basic function that takes in a boolean to say if the piece is alive, if so
-            it will check a list to see which diagonal part of the board the piece is on.
+            Basic function that takes in a boolean to check a list
+            to see which diagonal part of the board the piece is on.
             
             Parameters
             ----------
@@ -212,21 +218,37 @@ def main():
                 Statement on which diagonal the piece is on
             
             '''
-            if lifeStatus == True:
-                for i in range(0, len(pieceXPositions)-4, 1):
-                    if self.pos[0] == pieceXPositions[i]:
-                        return True
-                    
-                for i in range(4, len(pieceXPositions), 1):
-                    if self.pos[0] == pieceXPositions[i]:
-                        return False
+            for i in range(0, len(pieceXPositions)-4, 1):
+                if self.pos[0] == pieceXPositions[i]:
+                    return True
+                
+            for i in range(4, len(pieceXPositions), 1):
+                if self.pos[0] == pieceXPositions[i]:
+                    return False
             
         def pieceMovement(self, direction, pieceColour):
+            '''
+            Function that moves pieces according to its inputs
             
+            Uses the given str inputs in order to correctly move pieces. Pieces
+            move differently due to the fact that red has to move down as opposed
+            to black needing to move up on the screen.
+            
+            Parameters
+            ----------
+            direction : str
+                Direction string that the piece is being told to move in
+            pieceColour : str
+                String on which team/"colour" the piece is
+            
+            Returns
+            -------
+            None
+            '''
             if pieceColour == 'black':
                 if direction == 'right':
-                     self.pos[0] += tileWidth
-                     self.pos[1] -= tileHeight
+                    self.pos[0] += tileWidth
+                    self.pos[1] -= tileHeight
                      
                 elif direction == 'left':
                      self.pos[0] -= tileWidth
@@ -239,7 +261,6 @@ def main():
                 elif direction == 'left':
                     self.pos[0] -= tileWidth
                     self.pos[1] -= tileHeight
-                 
         
     #------Object Definitions------
     
@@ -252,24 +273,21 @@ def main():
     #--Tiles--
     
     tiles = [] # List of tiles/tile information for the program to draw from
-    
-    # Load Tile Format into tiles list using for loops
-    for y in range(0, 8, 1): #For loop that repeats 8 times, the number of rows
+
+    for y in range(0, 8, 1):#For loop that repeats 8 times, the number of rows
+        for x in range(0, 4, 1): #For loop that repeats 8 times, the number of columns
+            tiles.append(tile( grey, [tilePos[0], tilePos[1], tileWidth, tileHeight]))
+            tilePos[0] += tileWidth*2
         
-        for x in range(0, 8, 1): #For loop that repeats 8 times, the number of columns
-            if isTileWhite == True: # Add a white tile if True
-                tiles.append(tile( white, [tilePos[0], tilePos[1], tileWidth, tileHeight] ))
-                tilePos[0] += tileWidth
-            elif isTileWhite == False: # Add a grey tile if False
-                tiles.append(tile( grey, [tilePos[0], tilePos[1], tileWidth, tileHeight] ))
-                tilePos[0] += tileWidth
-            isTileWhite = not isTileWhite # Alternate the colour along the x axis
-            
-        tilePos[1] += tileHeight #Add the y for the next line of tiles
+        tilePos[1] += tileHeight # Add the y for the next line of tiles
         tilePos[0] -= tileWidth*8 # Decrease the x of the tiles by 8 times the width of one tile (the length of the board)
-        isTileWhite = not isTileWhite # Alternate the colour along the y axis (create grid pattern instead of straight red & white lines)
-    
-    
+        tileShift = not tileShift # Alternating True/False statement
+        #If & Elif statements make checker grid possible by changing the tilePos
+        if tileShift == True:
+            tilePos[0] += 72
+        elif tileShift == False:
+            tilePos[0] -= 72
+            
     #--Pieces--
     
     pieces = []
@@ -280,12 +298,12 @@ def main():
                 pieces.append(piece (pieceColour, [ piecePos[0], piecePos[1] ], pieceRadius) )
                 piecePos[0] += tileWidth*2
             piecePos[1] += tileHeight
-            piecePos[0] -= tileWidth*9
+            piecePos[0] -= tileWidth*7
         return pieces
     
     loadPieces(red, piecePos)#Red pieces
     piecePos[1]+=tileWidth*4 #Reset the piecePos variables
-    piecePos[0]+=tileWidth*2
+    piecePos[0]-=tileWidth*2
     loadPieces(black, piecePos)#Black pieces
 
     
@@ -300,8 +318,6 @@ def main():
         if programState == 'Player 1 Continue':
             # Update your game objects and data structures here...
             playerTurn = '1'
-            right = 0
-            left = 0
             renderedTurnDeclare = titleFont.render(f"Player {playerTurn}'s Turn", 12, white)
             
             if playerOneContinue.tileCollidePoint(mousePos):
@@ -319,72 +335,54 @@ def main():
             # Update your game objects and data structures here...
 
             if ev.type == pygame.MOUSEBUTTONDOWN: # Is there a mouse event
+#                 for i in range(0, len(tiles), 1):
+#                     if tiles[i].tileCollidePoint(mousePos):
+#                         print(i)
+                
                 if pieceChosen == False:
                     for i in range(len(pieces)-8, len(pieces), 1): # Check all pieces with their indexes between 8 and 16 (black pieces)
                         if pieces[i].distFromPoints(mousePos) < pieceRadius: # Has a piece been clicked?
                             
-                            # If/Elif statement to find out which diagonal the piece is on
-                            # The 2*i + 'number' statements are a y = mx+b format of different graphs of the relationship between tile and piece indexes
-                            if pieces[i].whichDiagonal(True) == True: #Is the piece on the "True" diagonal
+                            # If/Elif statement to find out which diagonal part of the board the piece is on (important to know for a game with diagonal tiles)
+                            # Statement then records variables/does math to determine the indexes of the piece and surrounding tiles that it can be moved to
+                            if pieces[i].whichDiagonal() == True: #Is the piece on the "True" diagonal
                                 pieceChosen = True #Declare that a piece has been chosen
                                 
-                                right = 2*i + 26
-                                left = 2*i + 24
+                                print(pieces[i].pos)  
+                                
+                                topLeftTile = i+12
+                                topRightTile = i+13
                                 pieceIndex = i
+                                #print(f'{topLeftTile} {topRightTile} {i}')
                                 
-#                                 tiles[2*i + 24].clicked(green) #Highlight tile on the left
-                                
-#                                 if right!=47 and right!=39: #Highlight tile on the right, only if it does not go over the border
-#                                     tiles[2*i + 26].clicked(green)
-#                                 else:
-#                                     right = 0
-                                    
-                            elif pieces[i].whichDiagonal(True) == False: #Is the piece on the "False" diagonal
+                            elif pieces[i].whichDiagonal() == False: #Is the piece on the "False" diagonal
                                 pieceChosen = True #Declare that a piece has been chosen
                                 
-                                right = 2*i + 25
-                                left = 2*i + 23
-                                print(right)
+                                print(pieces[i].pos)
+                                
+                                topLeftTile = i+11
+                                topRightTile = i+12
                                 pieceIndex = i
+                                #print(f'{topLeftTile} {topRightTile} {i}')
                                 
-                                
-#                                 if (2*i + 23) > 47: #Highlight the tile on the left, only if it does not go over the border
-#                                     tiles[2*i + 23].clicked(green)
-#                                     left = 2*i + 23
-#                                     pieceIndex = i
-#                                 else:
-#                                     right = 0
-#                                     pieceIndex = i
-                                    
-#                                 tiles[2*i + 25].clicked(green) #Highlight the right tile
-                                
-                                
-            if pieceChosen == True: # Has a piece been chosen?
-                if tiles[right].tileCollidePoint(mousePos): # Is the mouse clicking on the right highlighted tile? If so, move the piece right and reset
-                    pieces[pieceIndex].pieceMovement('right', 'black')
-#                     if right != 0: #Check that the 'right' tile does not go over the border, right value will only be 0 if so (same logic applies for left as well)
-#                         tiles[right].clicked(grey)
-#                     if left != 0:
-#                         tiles[left].clicked(grey)
-                    programState = 'Player 1 Continue'
-                    pieceChosen = False
-                elif tiles[left].tileCollidePoint(mousePos): # Is the mouse clicking on the left highlighted tile? If so, move the piece left and reset
-                    pieces[pieceIndex].pieceMovement('left', 'black')
-#                     if right != 0:
-#                         tiles[right].clicked(grey)
-#                     if left != 0:
-#                         tiles[left].clicked(grey)
-                    programState = 'Player 1 Continue'
-                    pieceChosen = False
+                elif pieceChosen == True:
+                    if tiles[topRightTile].tileCollidePoint(mousePos): # Is the mouse clicking on the right highlighted tile? If so, move the piece right and reset
+                        pieces[pieceIndex].pieceMovement('right', 'black')
+                    elif tiles[topLeftTile].tileCollidePoint(mousePos): # Is the mouse clicking on the left highlighted tile? If so, move the piece left and reset
+                        pieces[pieceIndex].pieceMovement('left', 'black')
+                    
+                    programState = 'Player 2 Continue' # Change programState
+                    pieceChosen = False # Reset to no piece being chosen
                     
             #-----Drawing-----
             # So first fill everything with the background color
             mainSurface.fill((0, 0, 0))
             
+            pygame.draw.rect(mainSurface, white, (72, 72, tileWidth*8, tileHeight*8))# Draw the white "tiles" (Background square)
             
-            for i in range(0, len(tiles), 1): # Draw tiles
+            for i in range(0, len(tiles), 1): # Draw grey tiles
                 tiles[i].drawTile(mainSurface)
-            
+                
             for i in range(0, len(pieces), 1): # Draw pieces
                 pieces[i].drawPiece(mainSurface)
         
@@ -408,13 +406,46 @@ def main():
         
         elif programState == 'Player 2 Turn':
             # Update your game objects and data structures here...
+            
+            if ev.type == pygame.MOUSEBUTTONDOWN: # Is there a mouse event
+#                 for i in range(0, len(tiles), 1):
+#                     if tiles[i].tileCollidePoint(mousePos):
+#                         print(i)
+                
+                if pieceChosen == False:
+                    for i in range(0, len(pieces)-8, 1): # Check all pieces with their indexes between 0 and 8 (red pieces)
+                        if pieces[i].distFromPoints(mousePos) < pieceRadius: # Has a piece been clicked?
                             
+                            # If/Elif statement to find out which diagonal part of the board the piece is on (important to know for a game with diagonal tiles)
+                            # Statement then records variables/does math to determine the indexes of the piece and surrounding tiles that it can be moved to
+                            if pieces[i].whichDiagonal() == True: #Is the piece on the "True" diagonal
+                                pieceChosen = True #Declare that a piece has been chosen
+                                bottomLeftTile = i+4
+                                bottomRightTile = i+5
+                                pieceIndex = i
+                                
+                            elif pieces[i].whichDiagonal() == False: #Is the piece on the "False" diagonal
+                                pieceChosen = True #Declare that a piece has been chosen
+                                bottomLeftTile = i+3
+                                bottomRightTile = i+4
+                                pieceIndex = i
+                                
+                elif pieceChosen == True:
+                    if tiles[bottomRightTile].tileCollidePoint(mousePos): # Is the mouse clicking on the right highlighted tile? If so, move the piece right and reset
+                        pieces[pieceIndex].pieceMovement('right', 'red')
+                    elif tiles[bottomLeftTile].tileCollidePoint(mousePos): # Is the mouse clicking on the left highlighted tile? If so, move the piece left and reset
+                        pieces[pieceIndex].pieceMovement('left', 'red')
+                        
+                    programState = 'Player 1 Continue' # Change programState
+                    pieceChosen = False # Reset to no piece being chosen
+                    
             mousePos = pygame.mouse.get_pos()#Mouse position for buttons
             
             #-----Drawing-----
             # So first fill everything with the background color
             mainSurface.fill((0, 0, 0))
             
+            pygame.draw.rect(mainSurface, white, (72, 72, tileWidth*8, tileHeight*8))# Draw the white "tiles" (Background square)
             
             for i in range(0, len(tiles), 1): # Draw tiles
                 tiles[i].drawTile(mainSurface)
