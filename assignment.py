@@ -15,9 +15,27 @@
 #-----------------------------------------------------------------------------
 
 import pygame
-import random
 import math
+
+def distFromPoints(point1, point2):
+    '''
+    This function calculationes the distance between two points given by a set of tuples (x1,y1) and (x2,y2)
     
+    Parameters
+    ----------
+    point1 : float
+        The first point to compare
+    point2 : float
+        The second point to compare
+        
+    Returns
+    float
+        The distance between the two points
+    '''
+    distance = math.sqrt( ((point2[0]-point1[0])**2)+((point2[1]-point1[1])**2) )
+    
+    return distance
+
 def main():
     """ Set up the game and run the main game loop """
     pygame.init()      # Prepare the pygame module for use
@@ -46,9 +64,8 @@ def main():
     tileShift = False
     
     #Piece Variables
-    piecePos = [144-tileWidth/2, 108]
+    piecePos = [108, 108]
     pieceRadius = 30
-    pieceXPositions = (180, 324, 468, 612, 108, 252, 396, 540) #List of x values to help determine which diagonal part of the board the piece is on
     pieceChosen = False
     
     #Continue Button Variables
@@ -60,18 +77,25 @@ def main():
     playerTurn = '1'
     
     # Board
-    board = []
-    boardX = []
-    boardY = []
     
-    for count in range(0, 8, 1):
-        boardX.append( tilePos[0]*(count+1) + tileWidth/2)
+    #             X0          X1          X2          X3          X4          X5          X6          X7
+    board0 = [(108, 108), (180, 108), (252, 108), (324, 108), (396, 108), (468, 108), (540, 108), (612, 108)] # Y0
+    board1 = [(108, 180), (180, 180), (252, 180), (324, 180), (396, 180), (468, 180), (540, 180), (612, 180)] # Y1
+    board2 = [(108, 252), (180, 252), (252, 252), (324, 252), (396, 252), (468, 252), (540, 252), (612, 252)] # Y2
+    board3 = [(108, 324), (180, 324), (252, 324), (324, 324), (396, 324), (468, 324), (540, 324), (612, 324)] # Y3
+    board4 = [(108, 396), (180, 396), (252, 396), (324, 396), (396, 396), (468, 396), (540, 396), (612, 396)] # Y4
+    board5 = [(108, 468), (180, 468), (252, 468), (324, 468), (396, 468), (468, 468), (540, 468), (612, 468)] # Y5
+    board6 = [(108, 540), (180, 540), (252, 540), (324, 540), (396, 540), (468, 540), (540, 540), (612, 540)] # Y6
+    board7 = [(108, 612), (180, 612), (252, 612), (324, 612), (396, 612), (468, 612), (540, 612), (612, 612)] # Y7
     
-    for count in range(0, 8, 1):
-        boardY.append( tilePos[1]*(count+1) + tileHeight/2)
+    board = [ board0, board1, board2, board3, board4, board5, board6, board7] # List of lists, the board as a list
     
-    print(boardX)
-    print(boardY)
+    #Piece Variables
+    redPiece = [ [0, 0], [2, 0], [4, 0], [6, 0], [1, 1], [3, 1], [5, 1], [7, 1] ] # Red piece coordinates
+    blackPiece = [ [0, 6], [2, 6], [4, 6], [6, 6], [1, 7], [3, 7], [5, 7], [7, 7] ] # Black piece coordinates
+    pieceRadius = 30 # Radius of the pieces
+    pieceChosen = False # Statement on if a piece has been chosen or not
+    
     
     #--Object Classes--
     
@@ -170,84 +194,8 @@ def main():
                         return True
             else: return False
             
-             
-    class piece():
-        def __init__(self, inputColour, inputPos, inputRadius):
-            self.pos = inputPos
-            self.colour = inputColour
-            self.radius = inputRadius
-            
-        def drawPiece(self, inputSurface):
-            '''
-            Basic function that draws a singular piece on the surface given
-            
-            Parameters
-            ----------
-            inputSurface : (int, int, int)
-                the surface at which the piece is drawn
-                
-            Returns
-            -------
-            None
-            '''
-            pygame.draw.circle(inputSurface, self.colour, [ self.pos[0], self.pos[1] ], self.radius)
         
-        def distFromPoints(self, point):# Function from python notes, circle-button collision detection. Edited to better reflect the pieces
-            '''
-            This function calculationes the distance between two points given by a set of tuples (x1,y1) and (x2,y2)
-            
-            Parameters
-            ----------
-            point : (float, float)
-                The point to compare
-                
-            Returns
-            -------
-            float
-                The distance between the two points
-            '''
-            distance = math.sqrt( ((point[0]-self.pos[0])**2)+((point[1]-self.pos[1])**2) )
-            
-            return distance    
-        
-            
-        def pieceMovement(self, direction, pieceColour):
-            '''
-            Function that moves pieces according to its inputs
-            
-            Uses the given str inputs in order to correctly move pieces. Pieces
-            move differently due to the fact that red has to move down as opposed
-            to black needing to move up on the screen.
-            
-            Parameters
-            ----------
-            direction : str
-                Direction string that the piece is being told to move in
-            pieceColour : str
-                String on which team/"colour" the piece is
-            
-            Returns
-            -------
-            None
-            '''
-            if pieceColour == 'black':
-                if direction == 'right':
-                    self.pos[0] += tileWidth
-                    self.pos[1] -= tileHeight
-                     
-                elif direction == 'left':
-                     self.pos[0] -= tileWidth
-                     self.pos[1] -= tileHeight
-                     
-            elif pieceColour == 'red':
-                if direction == 'right':
-                    self.pos[0] += tileWidth
-                    self.pos[1] += tileHeight
-                elif direction == 'left':
-                    self.pos[0] -= tileWidth
-                    self.pos[1] -= tileHeight
-        
-    #------Object Definitions------
+    #------Object Definitions (Initializations)------
     
     #--Buttons--
     
@@ -273,9 +221,6 @@ def main():
         elif tileShift == False:
             tilePos[0] -= 72
             
-    #--Pieces--
-    
-    pieces = [] # List of pieces
     
     while True:
         ev = pygame.event.poll()    # Look for any event
@@ -305,12 +250,24 @@ def main():
             # Update your game objects and data structures here...
 
             if ev.type == pygame.MOUSEBUTTONDOWN: # Is there a mouse event
-                for i in range(0, len(tiles), 1):
-                    if tiles[i].tileCollidePoint(mousePos):
-                        print(i)
-            
-
-
+                if pieceChosen == False: # If no piece has been selected
+                    for i in range(0, len(blackPiece), 1): # Check all black piece indexes
+                        if distFromPoints(board[blackPiece[i][1]][blackPiece[i][0]], mousePos) < pieceRadius: # If there is a collision between the mouse and a black piece
+                            pieceChosen = True
+                            a = i
+            if pieceChosen == True: # If a piece has been selected
+                print(blackPiece[a])
+                
+                if ev.type == pygame.KEYDOWN:
+                    if ev.unicode == 'a' or ev.scancode == 80:
+                        blackPiece[a][1] -= 1
+                        blackPiece[a][0] -= 1
+                        pieceChosen = False
+                    elif ev.unicode == 'd' or ev.scancode == 79:
+                        blackPiece[a][1] -= 1
+                        blackPiece[a][0] += 1
+                        pieceChosen = False
+                
             #-----Drawing-----
             # So first fill everything with the background color
             mainSurface.fill((0, 0, 0))
@@ -319,9 +276,10 @@ def main():
             
             for i in range(0, len(tiles), 1): # Draw grey tiles
                 tiles[i].drawTile(mainSurface)
-                
-            for i in range(0, len(pieces), 1): # Draw pieces
-                pieces[i].drawPiece(mainSurface)
+            for i in range(0, len(redPiece), 1): # Draw red pieces
+                pygame.draw.circle(mainSurface, red, board[redPiece[i][1]][redPiece[i][0]], pieceRadius)
+            for i in range(0, len(blackPiece), 1): # Draw black pieces
+                pygame.draw.circle(mainSurface, black, board[blackPiece[i][1]][blackPiece[i][0]], pieceRadius)
         
         
         elif programState == 'Player 2 Continue':
@@ -356,8 +314,6 @@ def main():
             for i in range(0, len(tiles), 1): # Draw tiles
                 tiles[i].drawTile(mainSurface)
             
-            for i in range(0, len(pieces), 1): # Draw pieces
-                pieces[i].drawPiece(mainSurface)
             
         # Now the surface is ready, tell pygame to display it!
         pygame.display.flip()
