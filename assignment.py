@@ -59,6 +59,20 @@ def main():
     buttonFont = pygame.font.SysFont("Times New Roman", 26)
     playerTurn = '1'
     
+    # Board
+    board = []
+    boardX = []
+    boardY = []
+    
+    for count in range(0, 8, 1):
+        boardX.append( tilePos[0]*(count+1) + tileWidth/2)
+    
+    for count in range(0, 8, 1):
+        boardY.append( tilePos[1]*(count+1) + tileHeight/2)
+    
+    print(boardX)
+    print(boardY)
+    
     #--Object Classes--
     
     class button(): #Class object for tiles and buttons
@@ -178,12 +192,6 @@ def main():
             '''
             pygame.draw.circle(inputSurface, self.colour, [ self.pos[0], self.pos[1] ], self.radius)
         
-        def getPos(self):
-            '''
-            '''
-            
-            return self.pos
-        
         def distFromPoints(self, point):# Function from python notes, circle-button collision detection. Edited to better reflect the pieces
             '''
             This function calculationes the distance between two points given by a set of tuples (x1,y1) and (x2,y2)
@@ -202,29 +210,6 @@ def main():
             
             return distance    
         
-        def whichDiagonal(self):
-            '''
-            Basic function that takes in a boolean to check a list
-            to see which diagonal part of the board the piece is on.
-            
-            Parameters
-            ----------
-            lifeStatus : boolean
-                The statement on if the tile is alive
-            
-            Returns
-            -------
-            boolean
-                Statement on which diagonal the piece is on
-            
-            '''
-            for i in range(0, len(pieceXPositions)-4, 1):
-                if self.pos[0] == pieceXPositions[i]:
-                    return True
-                
-            for i in range(4, len(pieceXPositions), 1):
-                if self.pos[0] == pieceXPositions[i]:
-                    return False
             
         def pieceMovement(self, direction, pieceColour):
             '''
@@ -290,22 +275,7 @@ def main():
             
     #--Pieces--
     
-    pieces = []
-    
-    def loadPieces(pieceColour, piecePos): #Function to add pieces to piece list
-        for y in range(0, 2, 1):
-            for x in range(0, 4, 1):
-                pieces.append(piece (pieceColour, [ piecePos[0], piecePos[1] ], pieceRadius) )
-                piecePos[0] += tileWidth*2
-            piecePos[1] += tileHeight
-            piecePos[0] -= tileWidth*7
-        return pieces
-    
-    loadPieces(red, piecePos)#Red pieces
-    piecePos[1]+=tileWidth*4 #Reset the piecePos variables
-    piecePos[0]-=tileWidth*2
-    loadPieces(black, piecePos)#Black pieces
-
+    pieces = [] # List of pieces
     
     while True:
         ev = pygame.event.poll()    # Look for any event
@@ -335,45 +305,12 @@ def main():
             # Update your game objects and data structures here...
 
             if ev.type == pygame.MOUSEBUTTONDOWN: # Is there a mouse event
-#                 for i in range(0, len(tiles), 1):
-#                     if tiles[i].tileCollidePoint(mousePos):
-#                         print(i)
-                
-                if pieceChosen == False:
-                    for i in range(len(pieces)-8, len(pieces), 1): # Check all pieces with their indexes between 8 and 16 (black pieces)
-                        if pieces[i].distFromPoints(mousePos) < pieceRadius: # Has a piece been clicked?
-                            
-                            # If/Elif statement to find out which diagonal part of the board the piece is on (important to know for a game with diagonal tiles)
-                            # Statement then records variables/does math to determine the indexes of the piece and surrounding tiles that it can be moved to
-                            if pieces[i].whichDiagonal() == True: #Is the piece on the "True" diagonal
-                                pieceChosen = True #Declare that a piece has been chosen
-                                
-                                print(pieces[i].pos)  
-                                
-                                topLeftTile = i+12
-                                topRightTile = i+13
-                                pieceIndex = i
-                                #print(f'{topLeftTile} {topRightTile} {i}')
-                                
-                            elif pieces[i].whichDiagonal() == False: #Is the piece on the "False" diagonal
-                                pieceChosen = True #Declare that a piece has been chosen
-                                
-                                print(pieces[i].pos)
-                                
-                                topLeftTile = i+11
-                                topRightTile = i+12
-                                pieceIndex = i
-                                #print(f'{topLeftTile} {topRightTile} {i}')
-                                
-                elif pieceChosen == True:
-                    if tiles[topRightTile].tileCollidePoint(mousePos): # Is the mouse clicking on the right highlighted tile? If so, move the piece right and reset
-                        pieces[pieceIndex].pieceMovement('right', 'black')
-                    elif tiles[topLeftTile].tileCollidePoint(mousePos): # Is the mouse clicking on the left highlighted tile? If so, move the piece left and reset
-                        pieces[pieceIndex].pieceMovement('left', 'black')
-                    
-                    programState = 'Player 2 Continue' # Change programState
-                    pieceChosen = False # Reset to no piece being chosen
-                    
+                for i in range(0, len(tiles), 1):
+                    if tiles[i].tileCollidePoint(mousePos):
+                        print(i)
+            
+
+
             #-----Drawing-----
             # So first fill everything with the background color
             mainSurface.fill((0, 0, 0))
@@ -407,37 +344,6 @@ def main():
         elif programState == 'Player 2 Turn':
             # Update your game objects and data structures here...
             
-            if ev.type == pygame.MOUSEBUTTONDOWN: # Is there a mouse event
-#                 for i in range(0, len(tiles), 1):
-#                     if tiles[i].tileCollidePoint(mousePos):
-#                         print(i)
-                
-                if pieceChosen == False:
-                    for i in range(0, len(pieces)-8, 1): # Check all pieces with their indexes between 0 and 8 (red pieces)
-                        if pieces[i].distFromPoints(mousePos) < pieceRadius: # Has a piece been clicked?
-                            
-                            # If/Elif statement to find out which diagonal part of the board the piece is on (important to know for a game with diagonal tiles)
-                            # Statement then records variables/does math to determine the indexes of the piece and surrounding tiles that it can be moved to
-                            if pieces[i].whichDiagonal() == True: #Is the piece on the "True" diagonal
-                                pieceChosen = True #Declare that a piece has been chosen
-                                bottomLeftTile = i+4
-                                bottomRightTile = i+5
-                                pieceIndex = i
-                                
-                            elif pieces[i].whichDiagonal() == False: #Is the piece on the "False" diagonal
-                                pieceChosen = True #Declare that a piece has been chosen
-                                bottomLeftTile = i+3
-                                bottomRightTile = i+4
-                                pieceIndex = i
-                                
-                elif pieceChosen == True:
-                    if tiles[bottomRightTile].tileCollidePoint(mousePos): # Is the mouse clicking on the right highlighted tile? If so, move the piece right and reset
-                        pieces[pieceIndex].pieceMovement('right', 'red')
-                    elif tiles[bottomLeftTile].tileCollidePoint(mousePos): # Is the mouse clicking on the left highlighted tile? If so, move the piece left and reset
-                        pieces[pieceIndex].pieceMovement('left', 'red')
-                        
-                    programState = 'Player 1 Continue' # Change programState
-                    pieceChosen = False # Reset to no piece being chosen
                     
             mousePos = pygame.mouse.get_pos()#Mouse position for buttons
             
