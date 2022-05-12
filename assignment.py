@@ -63,11 +63,6 @@ def main():
     tileHeight = 72
     tileShift = False
     
-    #Piece Variables
-    piecePos = [108, 108]
-    pieceRadius = 30
-    pieceChosen = False
-    
     #Continue Button Variables
     contButtonRect = [160, 420, 400, 50]
     
@@ -91,8 +86,10 @@ def main():
     board = [ board0, board1, board2, board3, board4, board5, board6, board7] # List of lists, the board as a list
     
     #Piece Variables
-    redPiece = [ [0, 0], [2, 0], [4, 0], [6, 0], [1, 1], [3, 1], [5, 1], [7, 1] ] # Red piece coordinates
-    blackPiece = [ [0, 6], [2, 6], [4, 6], [6, 6], [1, 7], [3, 7], [5, 7], [7, 7] ] # Black piece coordinates
+    redPiece = [ [0, 0, 'Alive'], [2, 0, 'Alive'], [4, 0, 'Alive'], [6, 0, 'Alive'], [1, 1, 'Alive'], [3, 1, 'Alive'], [5, 1, 'Alive'], [7, 1, 'Alive'] ] # Red piece coordinates
+    redColour = [red, red, red, red, red, red, red, red] #Colours of the red pieces (For piece highlighting)
+    blackPiece = [ [0, 6, 'Alive'], [2, 6, 'Alive'], [4, 6, 'Alive'], [6, 6, 'Alive'], [1, 7, 'Alive'], [3, 7, 'Alive'], [5, 7, 'Alive'], [7, 7, 'Alive'] ] # Black piece coordinates
+    blackColour = [black, black, black, black, black, black, black, black] #Colours of the black pieces (For piece highlighting)
     pieceRadius = 30 # Radius of the pieces
     pieceChosen = False # Statement on if a piece has been chosen or not
     
@@ -207,8 +204,8 @@ def main():
     
     tiles = [] # List of tiles/tile information for the program to draw from
 
-    for y in range(0, 8, 1):#For loop that repeats 8 times, the number of rows
-        for x in range(0, 4, 1): #For loop that repeats 8 times, the number of columns
+    for count in range(0, 8, 1):#For loop that repeats 8 times, the number of rows
+        for count in range(0, 4, 1): #For loop that repeats 8 times, the number of columns
             tiles.append(tile( grey, [tilePos[0], tilePos[1], tileWidth, tileHeight]))
             tilePos[0] += tileWidth*2
         
@@ -236,6 +233,7 @@ def main():
             renderedTurnDeclare = titleFont.render(f"Player {playerTurn}'s Turn", 12, white)
             
             if playerOneContinue.tileCollidePoint(mousePos):
+                pieceChosen = False
                 programState = 'Player 1 Turn'
             
             #-----Drawing-----
@@ -254,19 +252,38 @@ def main():
                     for i in range(0, len(blackPiece), 1): # Check all black piece indexes
                         if distFromPoints(board[blackPiece[i][1]][blackPiece[i][0]], mousePos) < pieceRadius: # If there is a collision between the mouse and a black piece
                             pieceChosen = True
-                            a = i
+                            a = i # Temp variable to hold the index of the piece in the piece list
+                            blackColour[a] = yellow
+                            
             if pieceChosen == True: # If a piece has been selected
-                print(blackPiece[a])
-                
                 if ev.type == pygame.KEYDOWN:
-                    if ev.unicode == 'a' or ev.scancode == 80:
-                        blackPiece[a][1] -= 1
-                        blackPiece[a][0] -= 1
+                    
+                    if blackPiece[a][1] > 0: #If the piece is not at the top of the screen
+                        if blackPiece[a][0] > 0: # Left side border control
+                            if ev.unicode == 'a' or ev.scancode == 80: # If there is an input, move and reset
+                                blackPiece[a][1] -= 1
+                                blackPiece[a][0] -= 1
+                                pieceChosen = False
+                                blackColour[a] = black
+                                programState = 'Player 2 Continue'
+                        else: # If the tile to the right is over the border, reset the piece chosen
+                            pieceChosen = False
+                            blackColour[a] = black
+                        
+                        if blackPiece[a][0] < 7: # Right side border control
+                            if ev.unicode == 'd' or ev.scancode == 79: # If there is an input, move and reset
+                                blackPiece[a][1] -= 1
+                                blackPiece[a][0] += 1
+                                pieceChosen = False
+                                blackColour[a] = black
+                                programState = 'Player 2 Continue'
+                        else: # If the tile to the right is over the border, reset the piece chosen
+                            pieceChosen = False
+                            blackColour[a] = black
+                            
+                    else: # Reset the piece chosen
                         pieceChosen = False
-                    elif ev.unicode == 'd' or ev.scancode == 79:
-                        blackPiece[a][1] -= 1
-                        blackPiece[a][0] += 1
-                        pieceChosen = False
+                        blackColour[a] = black
                 
             #-----Drawing-----
             # So first fill everything with the background color
@@ -277,9 +294,11 @@ def main():
             for i in range(0, len(tiles), 1): # Draw grey tiles
                 tiles[i].drawTile(mainSurface)
             for i in range(0, len(redPiece), 1): # Draw red pieces
-                pygame.draw.circle(mainSurface, red, board[redPiece[i][1]][redPiece[i][0]], pieceRadius)
+                if redPiece[i][2] == 'Alive': # Check if the piece is alive
+                    pygame.draw.circle(mainSurface, redColour[i], board[redPiece[i][1]][redPiece[i][0]], pieceRadius)
             for i in range(0, len(blackPiece), 1): # Draw black pieces
-                pygame.draw.circle(mainSurface, black, board[blackPiece[i][1]][blackPiece[i][0]], pieceRadius)
+                if blackPiece[i][2] == 'Alive': # Check if the piece is alive
+                    pygame.draw.circle(mainSurface, blackColour[i], board[blackPiece[i][1]][blackPiece[i][0]], pieceRadius)
         
         
         elif programState == 'Player 2 Continue':
@@ -288,6 +307,7 @@ def main():
             renderedTurnDeclare = titleFont.render(f"Player {playerTurn}'s Turn", 12, red)
             
             if playerTwoContinue.tileCollidePoint(mousePos):
+                pieceChosen = False
                 programState = 'Player 2 Turn'
             
             
@@ -302,8 +322,42 @@ def main():
         elif programState == 'Player 2 Turn':
             # Update your game objects and data structures here...
             
+            if ev.type == pygame.MOUSEBUTTONDOWN: # Is there a mouse event
+                if pieceChosen == False: # If no piece has been selected
+                    for i in range(0, len(redPiece), 1): # Check all red piece indexes
+                        if distFromPoints(board[redPiece[i][1]][redPiece[i][0]], mousePos) < pieceRadius: # If there is a collision between the mouse and a red piece
+                            pieceChosen = True
+                            a = i # Temp variable to hold the index of the piece in the piece list
+                            redColour[a] = yellow
+            
+            if pieceChosen == True: # If a piece has been selected
+                if ev.type == pygame.KEYDOWN:
                     
-            mousePos = pygame.mouse.get_pos()#Mouse position for buttons
+                    if redPiece[a][1] < 7: #If the piece is not at the bottom of the screen
+                        if redPiece[a][0] > 0: # Left side border control
+                            if ev.unicode == 'a' or ev.scancode == 80: # If there is an input, move and reset
+                                redPiece[a][1] += 1
+                                redPiece[a][0] -= 1
+                                pieceChosen = False
+                                redColour[a] = red
+                                programState = 'Player 1 Continue'
+                        else: # If the tile to the right is over the border, reset the piece chosen
+                            pieceChosen = False
+                            redColour[a] = red
+                        
+                        if redPiece[a][0] < 7: # Right side border control
+                            if ev.unicode == 'd' or ev.scancode == 79: # If there is an input, move and reset
+                                redPiece[a][1] += 1
+                                redPiece[a][0] += 1
+                                pieceChosen = False
+                                redColour[a] = red
+                                programState = 'Player 1 Continue'
+                        else: # If the tile to the right is over the border, reset the piece chosen
+                            pieceChosen = False
+                            redColour[a] = red
+                    else: # Reset the piece chosen
+                        pieceChosen = False
+                        redColour[a] = red
             
             #-----Drawing-----
             # So first fill everything with the background color
@@ -311,8 +365,14 @@ def main():
             
             pygame.draw.rect(mainSurface, white, (72, 72, tileWidth*8, tileHeight*8))# Draw the white "tiles" (Background square)
             
-            for i in range(0, len(tiles), 1): # Draw tiles
+            for i in range(0, len(tiles), 1): # Draw grey tiles
                 tiles[i].drawTile(mainSurface)
+            for i in range(0, len(redPiece), 1): # Draw red pieces
+                if redPiece[i][2] == 'Alive': # Check if the piece is alive
+                    pygame.draw.circle(mainSurface, redColour[i], board[redPiece[i][1]][redPiece[i][0]], pieceRadius)
+            for i in range(0, len(blackPiece), 1): # Draw black pieces
+                if blackPiece[i][2] == 'Alive': # Check if the piece is alive
+                    pygame.draw.circle(mainSurface, blackColour[i], board[blackPiece[i][1]][blackPiece[i][0]], pieceRadius)
             
             
         # Now the surface is ready, tell pygame to display it!
