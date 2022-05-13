@@ -92,6 +92,7 @@ def main():
     blackColour = [black, black, black, black, black, black, black, black] #Colours of the black pieces (For piece highlighting)
     pieceRadius = 30 # Radius of the pieces
     pieceChosen = False # Statement on if a piece has been chosen or not
+    canMove = True
     
     
     #--Object Classes--
@@ -254,30 +255,72 @@ def main():
                             pieceChosen = True
                             a = i # Temp variable to hold the index of the piece in the piece list
                             blackColour[a] = yellow
-                            
+            
+            #----------------------------------------------------------------
+            # Inputs & Movement:
+            
             if pieceChosen == True: # If a piece has been selected
                 if ev.type == pygame.KEYDOWN:
                     
-                    if blackPiece[a][1] > 0: #If the piece is not at the top of the screen
-                        if blackPiece[a][0] > 0: # Left side border control
-                            if ev.unicode == 'a' or ev.scancode == 80: # If there is an input, move and reset
-                                blackPiece[a][1] -= 1
-                                blackPiece[a][0] -= 1
-                                pieceChosen = False
-                                blackColour[a] = black
-                                programState = 'Player 2 Continue'
-                        else: # If the tile to the right is over the border, reset the piece chosen
+                    if blackPiece[a][1]-1 > -1: #If the piece above is not overtop the screen
+                        
+                        #---------------Left Side---------------
+                        
+                        if blackPiece[a][0] > 0: # If the left tile exists/is on the board
+                            canMove = True
+                            
+                            for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
+                                if blackPiece[i] != blackPiece[a]: # Leave out the index equal to [a]
+                                    if blackPiece[i][0] == (blackPiece[a][0]-1) and blackPiece[i][1] == (blackPiece[a][1]-1): #Check for a black piece to the top left
+                                        print(f'{i}-black is in left side way')
+                                        canMove = False
+                                        pieceChosen = False
+                                    if redPiece[i][0] == (blackPiece[a][0]-1) and redPiece[i][1] == (blackPiece[a][1]-1):#Check for a red piece to the top left
+                                        print(f'{i}-red is in the left side way')
+                                        canMove = False
+                                        pieceChosen = False
+                            if ev.unicode == 'a' or ev.scancode == 80: # Check for input
+                                if canMove == True:
+                                    blackPiece[a][1] -= 1
+                                    blackPiece[a][0] -= 1
+                                    pieceChosen = False
+                                    blackColour[a] = black
+                                    programState = 'Player 2 Continue'
+                                else:# Reset the piece chosen
+                                    pieceChosen = False
+                                    blackColour[a] = black
+                                            
+                        else: # Reset the piece chosen
                             pieceChosen = False
                             blackColour[a] = black
                         
-                        if blackPiece[a][0] < 7: # Right side border control
-                            if ev.unicode == 'd' or ev.scancode == 79: # If there is an input, move and reset
-                                blackPiece[a][1] -= 1
-                                blackPiece[a][0] += 1
-                                pieceChosen = False
-                                blackColour[a] = black
-                                programState = 'Player 2 Continue'
-                        else: # If the tile to the right is over the border, reset the piece chosen
+                        #---------------Right Side--------------
+                        
+                        if blackPiece[a][0] < 7: # If the right tile exists/is on the board
+                            canMove = True
+                            
+                            for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
+                                if blackPiece[i] != blackPiece[a]: # Leave out the index equal to [a]
+                                    if blackPiece[i][0] == (blackPiece[a][0]+1) and blackPiece[i][1] == (blackPiece[a][1]-1): #Check for a piece to the top right
+                                        print(f'{i}-black is in right side way')
+                                        canMove = False
+                                        pieceChosen = False
+                                    if redPiece[i][0] == (blackPiece[a][0]+1) and redPiece[i][1] == (blackPiece[a][1]-1):#Check for a red piece to the top right
+                                        print(f'{i}-red is in the right side way')
+                                        canMove = False
+                                        pieceChosen = False
+                            if ev.unicode == 'd' or ev.scancode == 79: # Check for input
+                                if canMove == True:
+                                    blackPiece[a][1] -= 1
+                                    blackPiece[a][0] += 1
+                                    pieceChosen = False
+                                    blackColour[a] = black
+                                    programState = 'Player 2 Continue'
+                                else: # Reset the piece chosen
+                                    pieceChosen = False
+                                    blackColour[a] = black
+
+                        else: # Reset the piece chosen
                             pieceChosen = False
                             blackColour[a] = black
                             
@@ -285,6 +328,9 @@ def main():
                         pieceChosen = False
                         blackColour[a] = black
                 
+                
+            #----------------------------------------------------------------
+            
             #-----Drawing-----
             # So first fill everything with the background color
             mainSurface.fill((0, 0, 0))
@@ -330,34 +376,81 @@ def main():
                             a = i # Temp variable to hold the index of the piece in the piece list
                             redColour[a] = yellow
             
+            #----------------------------------------------------------------
+            # Inputs & Movement:
+            
             if pieceChosen == True: # If a piece has been selected
                 if ev.type == pygame.KEYDOWN:
                     
                     if redPiece[a][1] < 7: #If the piece is not at the bottom of the screen
-                        if redPiece[a][0] > 0: # Left side border control
-                            if ev.unicode == 'a' or ev.scancode == 80: # If there is an input, move and reset
-                                redPiece[a][1] += 1
-                                redPiece[a][0] -= 1
-                                pieceChosen = False
-                                redColour[a] = red
-                                programState = 'Player 1 Continue'
-                        else: # If the tile to the right is over the border, reset the piece chosen
+                        
+                        #---------------Left Side---------------
+                        
+                        if redPiece[a][0] > 0: # If the left tile exists/is on the board
+                            canMove = True
+                            
+                            for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
+                                if redPiece[i] != redPiece[a]: # Leave out the index equal to [a]
+                                    if redPiece[i][0] == (redPiece[a][0]-1) and redPiece[i][1] == (redPiece[a][1]+1): #Check for a red piece to the bottom left
+                                        print(f'{i}-red is in left side way')
+                                        canMove = False
+                                        pieceChosen = False
+                                    if blackPiece[i][0] == (redPiece[a][0]-1) and blackPiece[i][1] == (redPiece[a][1]+1):#Check for a black piece to the bottom left
+                                        print(f'{i}-black is in the left side way')
+                                        canMove = False
+                                        pieceChosen = False
+                            if ev.unicode == 'a' or ev.scancode == 80: # Check for input
+                                if canMove == True:
+                                    redPiece[a][1] += 1
+                                    redPiece[a][0] -= 1
+                                    pieceChosen = False
+                                    redColour[a] = red
+                                    programState = 'Player 1 Continue'
+                                else:# Reset the piece chosen
+                                    pieceChosen = False
+                                    redColour[a] = red
+                                            
+                        else: # Reset the piece chosen
                             pieceChosen = False
                             redColour[a] = red
                         
-                        if redPiece[a][0] < 7: # Right side border control
-                            if ev.unicode == 'd' or ev.scancode == 79: # If there is an input, move and reset
-                                redPiece[a][1] += 1
-                                redPiece[a][0] += 1
-                                pieceChosen = False
-                                redColour[a] = red
-                                programState = 'Player 1 Continue'
-                        else: # If the tile to the right is over the border, reset the piece chosen
+                        #---------------Right Side--------------
+                        
+                        if redPiece[a][0] < 7: # If the right tile exists/is on the board
+                            canMove = True
+                            
+                            for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
+                                if blackPiece[i] != blackPiece[a]: # Leave out the index equal to [a]
+                                    if redPiece[i][0] == (redPiece[a][0]+1) and redPiece[i][1] == (redPiece[a][1]+1): #Check for a piece to the bottom right
+                                        print(f'{i}-red is in right side way')
+                                        canMove = False
+                                        pieceChosen = False
+                                    if blackPiece[i][0] == (redPiece[a][0]+1) and blackPiece[i][1] == (redPiece[a][1]+1):#Check for a red piece to the bottom right
+                                        print(f'{i}-black is in the right side way')
+                                        canMove = False
+                                        pieceChosen = False
+                            if ev.unicode == 'd' or ev.scancode == 79: # Check for input
+                                if canMove == True:
+                                    redPiece[a][1] += 1
+                                    redPiece[a][0] += 1
+                                    pieceChosen = False
+                                    redColour[a] = red
+                                    programState = 'Player 1 Continue'
+                                else: # Reset the piece chosen
+                                    pieceChosen = False
+                                    redColour[a] = red
+
+                        else: # Reset the piece chosen
                             pieceChosen = False
                             redColour[a] = red
+                            
                     else: # Reset the piece chosen
                         pieceChosen = False
                         redColour[a] = red
+                
+                
+            
+            #----------------------------------------------------------------
             
             #-----Drawing-----
             # So first fill everything with the background color
