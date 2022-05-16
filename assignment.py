@@ -4,7 +4,7 @@
 #
 # Author:      Gavin B.
 # Created:     04-May-2022
-# Updated:     08-May-2022
+# Updated:     16-May-2022
 #-----------------------------------------------------------------------------
 #I think this project deserves a level XXXXXX because ...
 #
@@ -92,7 +92,8 @@ def main():
     blackColour = [black, black, black, black, black, black, black, black] #Colours of the black pieces (For piece highlighting)
     pieceRadius = 30 # Radius of the pieces
     pieceChosen = False # Statement on if a piece has been chosen or not
-    canMove = True
+    canMove = True # Statement on if a piece has been allowed to move upon an input
+    farSideBlocked = False # Statement regarding if a piece is in the way of jumping
     
     
     #--Object Classes--
@@ -241,7 +242,13 @@ def main():
             # So first fill everything with the background color
             mainSurface.fill((0, 0, 0))
             
+            pygame.draw.rect(mainSurface, white, (72, 72, tileWidth*8, tileHeight*8))# Draw the white "tiles" (Background square)
+            
+            for i in range(0, len(tiles), 1): # Draw grey tiles
+                tiles[i].drawTile(mainSurface)
+            
             playerOneContinue.drawTile(mainSurface)
+            pygame.draw.rect(mainSurface, black, (140, 120, 440, 80))
             mainSurface.blit(renderedTurnDeclare, (160, 120))
             mainSurface.blit(renderedTurnContinue, (300, 430))
             
@@ -252,9 +259,10 @@ def main():
                 if pieceChosen == False: # If no piece has been selected
                     for i in range(0, len(blackPiece), 1): # Check all black piece indexes
                         if distFromPoints(board[blackPiece[i][1]][blackPiece[i][0]], mousePos) < pieceRadius: # If there is a collision between the mouse and a black piece
-                            pieceChosen = True
-                            a = i # Temp variable to hold the index of the piece in the piece list
-                            blackColour[a] = yellow
+                            if blackPiece[i][2] == 'Alive': # Check if the piece is alive
+                                pieceChosen = True
+                                a = i # Temp variable to hold the index of the piece in the piece list
+                                blackColour[a] = yellow
             
             #----------------------------------------------------------------
             # Inputs & Movement:
@@ -262,6 +270,7 @@ def main():
             if pieceChosen == True: # If a piece has been selected
                 if ev.type == pygame.KEYDOWN:
                     
+                    farSideBlocked = False
                     if blackPiece[a][1]-1 > -1: #If the piece above is not overtop the screen
                         
                         #---------------Left Side---------------
@@ -275,10 +284,21 @@ def main():
                                         print(f'{i}-black is in left side way')
                                         canMove = False
                                         pieceChosen = False
+                                        
                                     if redPiece[i][0] == (blackPiece[a][0]-1) and redPiece[i][1] == (blackPiece[a][1]-1):#Check for a red piece to the top left
                                         print(f'{i}-red is in the left side way')
+                                        
+                                        for i in range(0, 8, 1):
+                                            if redPiece[i][0] == (blackPiece[a][0]-2) and redPiece[i][1] == (blackPiece[a][1]-2):
+                                                farSideBlocked = True
+                                                print(f'{i}-red is in the farther left side way (preventing a jump left)')
+                                            if blackPiece[i][0] == (blackPiece[a][0]-2) and blackPiece[i][1] == (blackPiece[a][1]-2):
+                                                farSideBlocked = True
+                                                print(f'{i}-black is in the farther left side way (preventing a jump left)')
+                                        
                                         canMove = False
                                         pieceChosen = False
+                                        
                             if ev.unicode == 'a' or ev.scancode == 80: # Check for input
                                 if canMove == True:
                                     blackPiece[a][1] -= 1
@@ -289,6 +309,10 @@ def main():
                                 else:# Reset the piece chosen
                                     pieceChosen = False
                                     blackColour[a] = black
+                                    
+                            else:# Reset the piece chosen
+                                pieceChosen = False
+                                blackColour[a] = black
                                             
                         else: # Reset the piece chosen
                             pieceChosen = False
@@ -303,12 +327,24 @@ def main():
                                 if blackPiece[i] != blackPiece[a]: # Leave out the index equal to [a]
                                     if blackPiece[i][0] == (blackPiece[a][0]+1) and blackPiece[i][1] == (blackPiece[a][1]-1): #Check for a piece to the top right
                                         print(f'{i}-black is in right side way')
+                                                
                                         canMove = False
                                         pieceChosen = False
+                                        
                                     if redPiece[i][0] == (blackPiece[a][0]+1) and redPiece[i][1] == (blackPiece[a][1]-1):#Check for a red piece to the top right
                                         print(f'{i}-red is in the right side way')
+                                        
+                                        for i in range(0, 8, 1):
+                                            if redPiece[i][0] == (blackPiece[a][0]+2) and redPiece[i][1] == (blackPiece[a][1]-2):
+                                                farSideBlocked = True
+                                                print(f'{i}-red is in the farther right side way (preventing a jump right)')
+                                            if blackPiece[i][0] == (blackPiece[a][0]+2) and blackPiece[i][1] == (blackPiece[a][1]-2):
+                                                farSideBlocked = True
+                                                print(f'{i}-black is in the farther left side way (preventing a jump right)')
+                                            
                                         canMove = False
                                         pieceChosen = False
+                                        
                             if ev.unicode == 'd' or ev.scancode == 79: # Check for input
                                 if canMove == True:
                                     blackPiece[a][1] -= 1
@@ -319,7 +355,9 @@ def main():
                                 else: # Reset the piece chosen
                                     pieceChosen = False
                                     blackColour[a] = black
-
+                            else:# Reset the piece chosen
+                                pieceChosen = False
+                                blackColour[a] = black
                         else: # Reset the piece chosen
                             pieceChosen = False
                             blackColour[a] = black
@@ -361,7 +399,13 @@ def main():
             # So first fill everything with the background color
             mainSurface.fill((0, 0, 0))
             
+            pygame.draw.rect(mainSurface, white, (72, 72, tileWidth*8, tileHeight*8))# Draw the white "tiles" (Background square)
+            
+            for i in range(0, len(tiles), 1): # Draw grey tiles
+                tiles[i].drawTile(mainSurface)
+            
             playerTwoContinue.drawTile(mainSurface)
+            pygame.draw.rect(mainSurface, black, (140, 120, 440, 80))
             mainSurface.blit(renderedTurnDeclare, (160, 120))
             mainSurface.blit(renderedTurnContinue, (300, 430))
         
@@ -372,9 +416,10 @@ def main():
                 if pieceChosen == False: # If no piece has been selected
                     for i in range(0, len(redPiece), 1): # Check all red piece indexes
                         if distFromPoints(board[redPiece[i][1]][redPiece[i][0]], mousePos) < pieceRadius: # If there is a collision between the mouse and a red piece
-                            pieceChosen = True
-                            a = i # Temp variable to hold the index of the piece in the piece list
-                            redColour[a] = yellow
+                            if redPiece[i][2] == 'Alive': # Check if the piece is alive
+                                pieceChosen = True
+                                a = i # Temp variable to hold the index of the piece in the piece list
+                                redColour[a] = yellow
             
             #----------------------------------------------------------------
             # Inputs & Movement:
@@ -406,13 +451,13 @@ def main():
                                     pieceChosen = False
                                     redColour[a] = red
                                     programState = 'Player 1 Continue'
-                                else:# Reset the piece chosen
-                                    pieceChosen = False
-                                    redColour[a] = red
-                                            
+                            else: # Reset the piece chosen
+                                pieceChosen = False
+                                redColour[a] = red
+                            
                         else: # Reset the piece chosen
                             pieceChosen = False
-                            redColour[a] = red
+                            blackColour[a] = black
                         
                         #---------------Right Side--------------
                         
@@ -439,7 +484,11 @@ def main():
                                 else: # Reset the piece chosen
                                     pieceChosen = False
                                     redColour[a] = red
-
+                                    
+                            else: # Reset the piece chosen
+                                pieceChosen = False
+                                blackColour[a] = black
+                                
                         else: # Reset the piece chosen
                             pieceChosen = False
                             redColour[a] = red
