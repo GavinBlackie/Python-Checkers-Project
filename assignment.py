@@ -229,10 +229,6 @@ def main():
         mousePos = pygame.mouse.get_pos()#Mouse position for buttons
         renderedTurnContinue = buttonFont.render('Take Turn!', 12, black)
         
-        canMove = True
-        farSideBlocked = False
-        enemyPieceInWay = False
-        
         if programState == 'Player 1 Continue':
             # Update your game objects and data structures here...
             playerTurn = '1'
@@ -258,7 +254,7 @@ def main():
             
         elif programState == 'Player 1 Turn':
             # Update your game objects and data structures here...
-
+        
             if ev.type == pygame.MOUSEBUTTONDOWN: # Is there a mouse event
                 if pieceChosen == False: # If no piece has been selected
                     for i in range(0, len(blackPiece), 1): # Check all black piece indexes
@@ -278,32 +274,33 @@ def main():
                         
                         #---------------Left Side---------------
                         
-                        if blackPiece[a][0] > 0: # If the tile is not on the left edge
-                            canMove = True
-                            farSideBlocked = False
-                            enemyPieceInWay = False
-                            
-                            for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
-                                if blackPiece[i][0] == (blackPiece[a][0]-1) and blackPiece[i][1] == (blackPiece[a][1]-1): #Check for a black piece to the top left
-                                    pieceInWay = True
-                                    canMove = False
-                                    pieceChosen = False
-                                    
-                                if redPiece[i][0] == (blackPiece[a][0]-1) and redPiece[i][1] == (blackPiece[a][1]-1):#Check for a red piece to the top left
-                                    enemyPieceInWay = True
-                                    j = i #Temp record the index of the red piece (in the case it needs to be killed)
-                                    
-                                    for i in range(0, 8, 1): # Do this 8 times, number of red pieces
-                                        if redPiece[i][0] == (blackPiece[a][0]-2) and redPiece[i][1] == (blackPiece[a][1]-2): # Check for a red piece in the way of a left jump
-                                            farSideBlocked = True
-                                        if blackPiece[i][0] == (blackPiece[a][0]-2) and blackPiece[i][1] == (blackPiece[a][1]-2): # Check for a red piece in the way of a left jump
-                                            farSideBlocked = True
-                                    
-                                    canMove = False
-                                    pieceChosen = False
+                        if ev.unicode == 'a' or ev.scancode == 80: # Check for input
+                            if blackPiece[a][0]-1 >= 0: # If the tile is not on the left edge
+                                canMove = True
+                                farSideBlocked = False
+                                enemyPieceInWay = False
+                                
+                                for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
+                                    if blackPiece[i][2] == 'Alive':
+                                        if blackPiece[i][0] == (blackPiece[a][0]-1) and blackPiece[i][1] == (blackPiece[a][1]-1): #Check for a black piece to the top left
+                                            canMove = False
+                                            pieceChosen = False
                                         
-                            if ev.unicode == 'a' or ev.scancode == 80: # Check for input
-                                if farSideBlocked != True and enemyPieceInWay == True:
+                                    if redPiece[i][2] == 'Alive':
+                                        if redPiece[i][0] == (blackPiece[a][0]-1) and redPiece[i][1] == (blackPiece[a][1]-1):#Check for a red piece to the top left
+                                            enemyPieceInWay = True
+                                            j = i #Temp record the index of the red piece (in the case it needs to be killed)
+                                            
+                                            for count in range(0, 8, 1): # Do this 8 times, number of red pieces
+                                                if redPiece[count][0] == (blackPiece[a][0]-2) and redPiece[count][1] == (blackPiece[a][1]-2) and redPiece[count][2] == 'Alive':
+                                                    farSideBlocked = True
+                                                if blackPiece[count][0] == (blackPiece[a][0]-2) and blackPiece[count][1] == (blackPiece[a][1]-2) and blackPiece[count][2] == 'Alive':
+                                                    farSideBlocked = True
+                                            
+                                            canMove = False
+                                            pieceChosen = False
+                                
+                                if farSideBlocked == False and enemyPieceInWay == True:
                                     if (blackPiece[a][0]-2) >= 0 and (blackPiece[a][1]-2) >= 0: # If the tile two to the left, two up is on the board, jump and reset
                                         blackPiece[a][1] -= 2
                                         blackPiece[a][0] -= 2
@@ -316,13 +313,14 @@ def main():
                                         pieceChosen = False
                                         blackColour[a] = black
                                         canMove = False
-                                    
+                                        
                                 if canMove == True:
                                     blackPiece[a][1] -= 1
                                     blackPiece[a][0] -= 1
                                     pieceChosen = False
                                     blackColour[a] = black
                                     programState = 'Player 2 Continue'
+                                        
                                 else:# Reset the piece chosen
                                     pieceChosen = False
                                     blackColour[a] = black
@@ -337,33 +335,33 @@ def main():
                         
                         #---------------Right Side--------------
                         
-                        if blackPiece[a][0] < 7: # If the tile is not on the right edge
-                            canMove = True
-                            farSideBlocked = False
-                            enemyPieceInWay = False
-                            
-                            for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
-                                if blackPiece[i] != blackPiece[a]: # Leave out the index equal to [a]
-                                    if blackPiece[i][0] == (blackPiece[a][0]+1) and blackPiece[i][1] == (blackPiece[a][1]-1): #Check for a piece to the top right
-                                        enemyPieceInWay = True   
-                                        canMove = False
-                                        pieceChosen = False
-                                        
-                                    if redPiece[i][0] == (blackPiece[a][0]+1) and redPiece[i][1] == (blackPiece[a][1]-1):#Check for a red piece to the top right
-                                        enemyPieceInWay = True
-                                        j = i #Temp record the index of the red piece (in the case it needs to be killed)
-                                        
-                                        for i in range(0, 8, 1):
-                                            if redPiece[i][0] == (blackPiece[a][0]+2) and redPiece[i][1] == (blackPiece[a][1]-2):
-                                                farSideBlocked = True
-                                            if blackPiece[i][0] == (blackPiece[a][0]+2) and blackPiece[i][1] == (blackPiece[a][1]-2):
-                                                farSideBlocked = True
+                        if ev.unicode == 'd' or ev.scancode == 79: # Check for input
+                            if blackPiece[a][0]+1 <= 7: # If the tile is not on the right edge
+                                canMove = True
+                                farSideBlocked = False
+                                enemyPieceInWay = False
+                                
+                                for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
+                                    if blackPiece[i][2] == 'Alive':
+                                        if blackPiece[i][0] == (blackPiece[a][0]+1) and blackPiece[i][1] == (blackPiece[a][1]-1): #Check for a black piece to the top right  
+                                            canMove = False
+                                            pieceChosen = False
+                                    
+                                    if redPiece[i][2] == 'Alive':
+                                        if redPiece[i][0] == (blackPiece[a][0]+1) and redPiece[i][1] == (blackPiece[a][1]-1):#Check for a red piece to the top right
+                                            enemyPieceInWay = True
+                                            j = i #Temp record the index of the red piece (in the case it needs to be killed)
                                             
-                                        canMove = False
-                                        pieceChosen = False
+                                            for count in range(0, 8, 1):
+                                                if redPiece[count][0] == (blackPiece[a][0]+2) and redPiece[count][1] == (blackPiece[a][1]-2) and redPiece[count][2] == 'Alive':
+                                                    farSideBlocked = True
+                                                if blackPiece[count][0] == (blackPiece[a][0]+2) and blackPiece[count][1] == (blackPiece[a][1]-2) and blackPiece[count][2] == 'Alive':
+                                                    farSideBlocked = True
+                                                
+                                            canMove = False
+                                            pieceChosen = False
                                         
-                            if ev.unicode == 'd' or ev.scancode == 79: # Check for input
-                                if farSideBlocked != True and enemyPieceInWay == True:
+                                if farSideBlocked == False and enemyPieceInWay == True:
                                     if (blackPiece[a][0]+2) <= 7 and (blackPiece[a][1]-2) >= 0: # If the tile two to the right, two up is on the board, jump and reset
                                         blackPiece[a][1] -= 2
                                         blackPiece[a][0] += 2
@@ -461,40 +459,41 @@ def main():
                         
                         #---------------Left Side---------------
                         
-                        if redPiece[a][0] > 0: # If the left tile exists/is on the board
-                            canMove = True
-                            farSideBlocked = False
-                            enemyPieceInWay = False
-                            
-                            for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
-                                if redPiece[i][0] == (redPiece[a][0]-1) and redPiece[i][1] == (redPiece[a][1]+1): #Check for a red piece to the bottom left
-                                    enemyPieceInWay = True
-                                    canMove = False
-                                    pieceChosen = False
-                                if blackPiece[i][0] == (redPiece[a][0]-1) and blackPiece[i][1] == (redPiece[a][1]+1):#Check for a black piece to the bottom left
-                                    enemyPieceInWay = True
-                                    j = i #Temp record the index of the red piece (in the case it needs to be killed)
+                        if ev.unicode == 'a' or ev.scancode == 80: # Check for input
+                            if redPiece[a][0]-1 >= 0: # If the left tile exists/is on the board
+                                canMove = True
+                                farSideBlocked = False
+                                enemyPieceInWay = False
                                 
-                                    for i in range(0, 8, 1): # Do this 8 times, number of red pieces
-                                        if blackPiece[i][0] == (redPiece[a][0]-2) and blackPiece[i][1] == (redPiece[a][1]+2): # Check for a red piece in the way of a left jump
-                                            farSideBlocked = True
-                                        if redPiece[i][0] == (redPiece[a][0]-2) and blackPiece[i][1] == (blackPiece[a][1]+2): # Check for a red piece in the way of a left jump
-                                            farSideBlocked = True
-                                    
-                                    canMove = False
-                                    pieceChosen = False
+                                for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
+                                    if redPiece[i][2] == 'Alive':
+                                        if redPiece[i][0] == (redPiece[a][0]-1) and redPiece[i][1] == (redPiece[a][1]+1): #Check for a red piece to the bottom left
+                                            canMove = False
+                                            pieceChosen = False
+                                    if blackPiece[i][2] == 'Alive':
+                                        if blackPiece[i][0] == (redPiece[a][0]-1) and blackPiece[i][1] == (redPiece[a][1]+1):#Check for a black piece to the bottom left
+                                            enemyPieceInWay = True
+                                            j = i #Temp record the index of the red piece (in the case it needs to be killed)
                                         
-                            if ev.unicode == 'a' or ev.scancode == 80: # Check for input
-                                if farSideBlocked != True and enemyPieceInWay == True:
+                                            for count in range(0, 8, 1): # Do this 8 times, number of red pieces
+                                                if blackPiece[count][0] == (redPiece[a][0]-2) and blackPiece[count][1] == (redPiece[a][1]+2) and blackPiece[count][2] == 'Alive': # Check for a red piece in the way of a left jump
+                                                    farSideBlocked = True
+                                                if redPiece[count][0] == (redPiece[a][0]-2) and redPiece[count][1] == (blackPiece[a][1]+2) and redPiece[count][2] == 'Alive': # Check for a red piece in the way of a left jump
+                                                    farSideBlocked = True
+                                            
+                                            canMove = False
+                                            pieceChosen = False
+                                            
+                                if farSideBlocked == False and enemyPieceInWay == True:
                                     if (redPiece[a][0]-2) >= 0 and (redPiece[a][1]+2) <= 7: # If the tile two to the left, two up is on the board, jump and reset
                                         redPiece[a][1] += 2
                                         redPiece[a][0] -= 2
-                                        blackPiece[j][2] = 'Dead' # Kill the red piece
+                                        blackPiece[j][2] = 'Dead' # Kill the black piece
                                         pieceChosen = False
                                         redColour[a] = red
                                         programState = 'Player 1 Continue'
                                         canMove = False
-                                        
+                                      
                                 if canMove == True:
                                     redPiece[a][1] += 1
                                     redPiece[a][0] -= 1
@@ -514,35 +513,36 @@ def main():
                         
                         #---------------Right Side--------------
                         
-                        if redPiece[a][0] < 7: # If the right tile exists/is on the board
-                            canMove = True
-                            farSideBlocked = False
-                            enemyPieceInWay = False
-                            
-                            for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
-                                if redPiece[i][0] == (redPiece[a][0]+1) and redPiece[i][1] == (redPiece[a][1]+1): #Check for a piece to the bottom right
-                                    pieceInWay = True
-                                    canMove = False
-                                    pieceChosen = False
-                                if blackPiece[i][0] == (redPiece[a][0]+1) and blackPiece[i][1] == (redPiece[a][1]+1):#Check for a red piece to the bottom right
-                                    enemyPieceInWay = True
-                                    j = i #Temp record the index of the red piece (in the case it needs to be killed)
+                        if ev.unicode == 'd' or ev.scancode == 79: # Check for input
+                            if redPiece[a][0]+1 <= 7: # If the right tile exists/is on the board
+                                canMove = True
+                                farSideBlocked = False
+                                enemyPieceInWay = False
                                 
-                                    for i in range(0, 8, 1): # Do this 8 times, number of red pieces
-                                        if blackPiece[i][0] == (redPiece[a][0]+2) and blackPiece[i][1] == (redPiece[a][1]+2): # Check for a red piece in the way of a right jump
-                                            farSideBlocked = True
-                                        if redPiece[i][0] == (redPiece[a][0]+2) and redPiece[i][1] == (redPiece[a][1]+2): # Check for a red piece in the way of a right jump
-                                            farSideBlocked = True
-                                    
-                                    canMove = False
-                                    pieceChosen = False
-                                    
-                            if ev.unicode == 'd' or ev.scancode == 79: # Check for input
+                                for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
+                                    if redPiece[i][2] == 'Alive':
+                                        if redPiece[i][0] == (redPiece[a][0]+1) and redPiece[i][1] == (redPiece[a][1]+1): #Check for a piece to the bottom right
+                                            canMove = False
+                                            pieceChosen = False
+                                    if blackPiece[i][2] == 'Alive':
+                                        if blackPiece[i][0] == (redPiece[a][0]+1) and blackPiece[i][1] == (redPiece[a][1]+1):#Check for a red piece to the bottom right
+                                            enemyPieceInWay = True
+                                            j = i #Temp record the index of the red piece (in the case it needs to be killed)
+                                        
+                                            for count in range(0, 8, 1): # Do this 8 times, number of red pieces
+                                                if blackPiece[count][0] == (redPiece[a][0]+2) and blackPiece[count][1] == (redPiece[a][1]+2) and blackPiece[count][2] == 'Alive':
+                                                    farSideBlocked = True
+                                                if redPiece[count][0] == (redPiece[a][0]+2) and redPiece[count][1] == (redPiece[a][1]+2) and redPiece[count][2] == 'Alive':
+                                                    farSideBlocked = True
+                                            
+                                            canMove = False
+                                            pieceChosen = False
+                                        
                                 if farSideBlocked != True and enemyPieceInWay == True:
                                     if (redPiece[a][0]+2) <= 7 and (redPiece[a][1]-2) <= 7: # If the tile two to the right, two up is on the board, jump and reset
                                         redPiece[a][1] += 2
                                         redPiece[a][0] += 2
-                                        blackPiece[j][2] = 'Dead' # Kill the red piece
+                                        blackPiece[j][2] = 'Dead' # Kill the black piece
                                         pieceChosen = False
                                         redColour[a] = red
                                         programState = 'Player 1 Continue'
