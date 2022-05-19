@@ -42,12 +42,15 @@ def main():
     surfaceSize = 720   # Desired physical surface size, in pixels.
     
     clock = pygame.time.Clock()  #Force frame rate to be slower
-
+    
+    frameRate = 60
+    frameCount = 0
+    
     # Create surface of (width, height), and its window.
     mainSurface = pygame.display.set_mode((surfaceSize, surfaceSize))
     
     #--Variables--
-    programState = 'Player 1 Continue'
+    programState = 'Start Menu'
     
     #Colours:
     white = (255, 255, 255)
@@ -88,7 +91,7 @@ def main():
     #Piece Variables
     redPiece = [ [0, 0, 'Alive'], [2, 0, 'Alive'], [4, 0, 'Alive'], [6, 0, 'Alive'], [1, 1, 'Alive'], [3, 1, 'Alive'], [5, 1, 'Alive'], [7, 1, 'Alive'] ] # Red piece coordinates
     redColour = [red, red, red, red, red, red, red, red] #Colours of the red pieces (For piece highlighting)
-    blackPiece = [ [0, 6, 'Alive'], [2, 6, 'Alive'], [4, 6, 'Alive'], [6, 6, 'Alive'], [1, 7, 'Alive'], [3, 7, 'Alive'], [5, 7, 'Alive'], [7, 7, 'Alive'] ] # Black piece coordinates
+    blackPiece = [ [0, 6, 'dead'], [2, 6, 'Alive'], [4, 6, 'Alive'], [6, 6, 'Alive'], [1, 7, 'Alive'], [3, 7, 'Alive'], [5, 7, 'Alive'], [7, 7, 'Alive'] ] # Black piece coordinates
     blackColour = [black, black, black, black, black, black, black, black] #Colours of the black pieces (For piece highlighting)
     pieceRadius = 30 # Radius of the pieces
     pieceChosen = False # Statement on if a piece has been chosen or not
@@ -103,7 +106,7 @@ def main():
             self.rect = inputRect
             self.colour = inputColour
             
-        def drawTile(self, inputSurface):
+        def draw(self, inputSurface):
             '''
             Basic function that draws a singular tile on the surface given
             
@@ -119,7 +122,7 @@ def main():
             pygame.draw.rect(inputSurface, self.colour, self.rect)
             
         #Collide function, checks wheter or not the input point is within the button's boundaries (Function from my mini-game assignment)
-        def tileCollidePoint(self, inPnt):
+        def buttonCollidePoint(self, inPnt):
             '''
             Function that returns True or False depending on whether or not the if statements are fullfilled.
               
@@ -148,9 +151,6 @@ def main():
         def __init__(self, inputColour, inputRect):
             self.rect = inputRect
             self.colour = inputColour
-            
-        def clicked(self, inputColour):
-            self.colour = inputColour
         
         def drawTile(self, inputSurface):
             '''
@@ -166,41 +166,21 @@ def main():
             None
             '''
             pygame.draw.rect(inputSurface, self.colour, self.rect)
-        
-        #Collide function, checks wheter or not the input point is within the button's boundaries (Function from my mini-game assignment)
-        def tileCollidePoint(self, inPnt):
-            '''
-            Function that returns True or False depending on whether or not the if statements are fullfilled.
-              
-            Check if colour of tile is correct (grey or green). Takes the inPnt parameter, if it is within the boundaries of the button
-            class's variables, checks if there is a mouse input & returns True if so
-            (pressing button), else return False (not pressing button)
-
-
-            Parameters
-            ----------
-            inPnt : int
-                positional list of X & Y values used to be checked in if statement
-              
-            Returns
-            -------
-            boolean
-                The statement regarding if the button was clicked or not
-            '''
-            if self.colour == grey or self.colour == green:
-                if inPnt[0] > self.rect[0] and inPnt[0] < self.rect[0]+self.rect[2] and inPnt[1] < self.rect[1]+self.rect[3] and inPnt[1] > self.rect[1]:#Is the inpt colliding with button?
-                    if ev.type == pygame.MOUSEBUTTONDOWN: #Is there a mouse event?
-                        return True
-            else: return False
             
         
     #------Object Definitions (Initializations)------
     
     #--Buttons--
     
+    newGameButton = button(green, [130, 440, 460, 60])
+    continueGameButton = button((155, 114, 0), [160, 350, 400, 50])
+    helpButton = button(yellow, [230, 525, 260, 50])
+    exitButton = button(red, [290, 600, 140, 30])
+    helpExit = button(red, [580, 650, 120, 40])
+    
+    
     playerOneContinue = button(green, contButtonRect)
     playerTwoContinue = button(green, contButtonRect)
-    
     
     #--Tiles--
     
@@ -222,19 +202,76 @@ def main():
             
     
     while True:
+        #print(f'Program Ticks: {pygame.time.get_ticks()} - programState: {programState}')
         ev = pygame.event.poll()    # Look for any event
         if ev.type == pygame.QUIT:  # Window close button clicked?
             break                   #   ... leave game loop
         
         mousePos = pygame.mouse.get_pos()#Mouse position for buttons
-        renderedTurnContinue = buttonFont.render('Take Turn!', 12, black)
         
-        if programState == 'Player 1 Continue':
+        frameCount+=1
+        if frameCount >= 60:
+            frameCount -= 60
+        
+        if programState == 'Start Menu':
+            # Update your game objects and data structures here...
+            
+            renderedTitle = titleFont.render('Title', 12, white)
+            renderedContinueGame = buttonFont.render('Continue Previous Game', 12, black)
+            renderedNew = buttonFont.render('New Game', 12, black)
+            renderedHelp = buttonFont.render('Help & Instructions', 12, black)
+            renderedExit = buttonFont.render('Exit', 12, black)
+            
+            if continueGameButton.buttonCollidePoint(mousePos) == True:
+                programState = 'Player 1 Continue'
+                
+            if newGameButton.buttonCollidePoint(mousePos) == True:
+                redPiece = [ [0, 0, 'Alive'], [2, 0, 'Alive'], [4, 0, 'Alive'], [6, 0, 'Alive'], [1, 1, 'Alive'], [3, 1, 'Alive'], [5, 1, 'Alive'], [7, 1, 'Alive'] ]
+                redColour = [red, red, red, red, red, red, red, red]
+                blackPiece = [ [0, 6, 'Alive'], [2, 6, 'Alive'], [4, 6, 'Alive'], [6, 6, 'Alive'], [1, 7, 'Alive'], [3, 7, 'Alive'], [5, 7, 'Alive'], [7, 7, 'Alive'] ]
+                blackColour = [black, black, black, black, black, black, black, black]
+                programState = 'Player 1 Continue'
+                
+            if helpButton.buttonCollidePoint(mousePos) == True:
+                programState = 'Help Menu'
+                
+            if exitButton.buttonCollidePoint(mousePos) == True:
+                break
+            
+            #-----Drawing-----
+            # So first fill everything with the background color
+            mainSurface.fill((0, 0, 0))
+            
+            newGameButton.draw(mainSurface)
+            continueGameButton.draw(mainSurface)
+            helpButton.draw(mainSurface)
+            exitButton.draw(mainSurface)
+            
+            mainSurface.blit(renderedTitle, (300, 100))
+            mainSurface.blit(renderedContinueGame, (235, 360))
+            mainSurface.blit(renderedNew, (300, 455))
+            mainSurface.blit(renderedHelp, (260, 535))
+            mainSurface.blit(renderedExit, (340, 600))
+            
+        elif programState == 'Help Menu':
+            # Update your game objects and data structures here...
+            
+            if helpExit.buttonCollidePoint(mousePos) == True:
+                programState = 'Start Menu'
+            
+            #-----Drawing-----
+            # So first fill everything with the background color
+            mainSurface.fill((0, 0, 0))
+            
+            helpExit.draw(mainSurface)
+            
+        elif programState == 'Player 1 Continue':
             # Update your game objects and data structures here...
             playerTurn = '1'
+            renderedTurnContinue = buttonFont.render('Take Turn!', 12, black)
             renderedTurnDeclare = titleFont.render(f"Player {playerTurn}'s Turn", 12, white)
             
-            if playerOneContinue.tileCollidePoint(mousePos):
+            if playerOneContinue.buttonCollidePoint(mousePos):
                 pieceChosen = False
                 programState = 'Player 1 Turn'
             
@@ -247,7 +284,7 @@ def main():
             for i in range(0, len(tiles), 1): # Draw grey tiles
                 tiles[i].drawTile(mainSurface)
             
-            playerOneContinue.drawTile(mainSurface)
+            playerOneContinue.draw(mainSurface)
             pygame.draw.rect(mainSurface, black, (140, 120, 440, 80))
             mainSurface.blit(renderedTurnDeclare, (160, 120))
             mainSurface.blit(renderedTurnContinue, (300, 430))
@@ -291,7 +328,7 @@ def main():
                                             enemyPieceInWay = True
                                             j = i #Temp record the index of the red piece (in the case it needs to be killed)
                                             
-                                            for count in range(0, 8, 1): # Do this 8 times, number of red pieces
+                                            for count in range(0, 8, 1): # Do this 8 times, number of pieces on each side
                                                 if redPiece[count][0] == (blackPiece[a][0]-2) and redPiece[count][1] == (blackPiece[a][1]-2) and redPiece[count][2] == 'Alive':
                                                     farSideBlocked = True
                                                 if blackPiece[count][0] == (blackPiece[a][0]-2) and blackPiece[count][1] == (blackPiece[a][1]-2) and blackPiece[count][2] == 'Alive':
@@ -352,7 +389,7 @@ def main():
                                             enemyPieceInWay = True
                                             j = i #Temp record the index of the red piece (in the case it needs to be killed)
                                             
-                                            for count in range(0, 8, 1):
+                                            for count in range(0, 8, 1): # Do this 8 times, number of pieces on each side
                                                 if redPiece[count][0] == (blackPiece[a][0]+2) and redPiece[count][1] == (blackPiece[a][1]-2) and redPiece[count][2] == 'Alive':
                                                     farSideBlocked = True
                                                 if blackPiece[count][0] == (blackPiece[a][0]+2) and blackPiece[count][1] == (blackPiece[a][1]-2) and blackPiece[count][2] == 'Alive':
@@ -416,9 +453,10 @@ def main():
         elif programState == 'Player 2 Continue':
             # Update your game objects and data structures here...
             playerTurn = '2'
+            renderedTurnContinue = buttonFont.render('Take Turn!', 12, black)
             renderedTurnDeclare = titleFont.render(f"Player {playerTurn}'s Turn", 12, red)
             
-            if playerTwoContinue.tileCollidePoint(mousePos):
+            if playerTwoContinue.buttonCollidePoint(mousePos):
                 pieceChosen = False
                 programState = 'Player 2 Turn'
             
@@ -432,7 +470,7 @@ def main():
             for i in range(0, len(tiles), 1): # Draw grey tiles
                 tiles[i].drawTile(mainSurface)
             
-            playerTwoContinue.drawTile(mainSurface)
+            playerTwoContinue.draw(mainSurface)
             pygame.draw.rect(mainSurface, black, (140, 120, 440, 80))
             mainSurface.blit(renderedTurnDeclare, (160, 120))
             mainSurface.blit(renderedTurnContinue, (300, 430))
@@ -475,7 +513,7 @@ def main():
                                             enemyPieceInWay = True
                                             j = i #Temp record the index of the red piece (in the case it needs to be killed)
                                         
-                                            for count in range(0, 8, 1): # Do this 8 times, number of red pieces
+                                            for count in range(0, 8, 1): # Do this 8 times, number of pieces on each side
                                                 if blackPiece[count][0] == (redPiece[a][0]-2) and blackPiece[count][1] == (redPiece[a][1]+2) and blackPiece[count][2] == 'Alive': # Check for a red piece in the way of a left jump
                                                     farSideBlocked = True
                                                 if redPiece[count][0] == (redPiece[a][0]-2) and redPiece[count][1] == (blackPiece[a][1]+2) and redPiece[count][2] == 'Alive': # Check for a red piece in the way of a left jump
@@ -529,7 +567,7 @@ def main():
                                             enemyPieceInWay = True
                                             j = i #Temp record the index of the red piece (in the case it needs to be killed)
                                         
-                                            for count in range(0, 8, 1): # Do this 8 times, number of red pieces
+                                            for count in range(0, 8, 1): # Do this 8 times, number of pieces on each side
                                                 if blackPiece[count][0] == (redPiece[a][0]+2) and blackPiece[count][1] == (redPiece[a][1]+2) and blackPiece[count][2] == 'Alive':
                                                     farSideBlocked = True
                                                 if redPiece[count][0] == (redPiece[a][0]+2) and redPiece[count][1] == (redPiece[a][1]+2) and redPiece[count][2] == 'Alive':
