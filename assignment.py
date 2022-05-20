@@ -36,6 +36,13 @@ def distFromPoints(point1, point2):
     
     return distance
 
+def pauseCheck(scanCode, currentState):
+    '''
+    '''
+    if scanCode == 41:
+        return 'Pause Menu'
+    else: return currentState
+
 def main():
     """ Set up the game and run the main game loop """
     pygame.init()      # Prepare the pygame module for use
@@ -50,7 +57,10 @@ def main():
     mainSurface = pygame.display.set_mode((surfaceSize, surfaceSize))
     
     #--Variables--
+    
     programState = 'Start Menu'
+    previousState = ''
+    playerTurn = '1'
     
     #Colours:
     white = (255, 255, 255)
@@ -59,6 +69,8 @@ def main():
     red = (255, 0, 0)
     yellow = (229, 255, 0)
     green = (0, 255, 0)
+    
+    goldBrown = (155, 114, 0)
     
     #Tile Variables
     tilePos = [72, 72]
@@ -72,7 +84,6 @@ def main():
     #Fonts and Text
     titleFont = pygame.font.SysFont("Times New Roman", 65)
     buttonFont = pygame.font.SysFont("Times New Roman", 26)
-    playerTurn = '1'
     
     # Board
     
@@ -98,6 +109,18 @@ def main():
     canMove = True # Statement on if a piece has been allowed to move upon an input
     farSideBlocked = False # Statement regarding if a piece is in the way of jumping
     enemyPieceInWay = False
+    
+    
+    file = open('redPieceInfo.txt', 'r')
+    fileContents = file.readline()
+    file.close()
+    
+    print(fileContents)
+    redPiece = fileContents
+    print(redPiece)
+    
+    if redPiece[1][0] == '0':
+        print('aa')
     
     #--Object Classes--
     
@@ -173,11 +196,13 @@ def main():
     #--Buttons--
     
     newGameButton = button(green, [130, 440, 460, 60])
-    continueGameButton = button((155, 114, 0), [160, 350, 400, 50])
+    continueGameButton = button(goldBrown, [160, 350, 400, 50])
     helpButton = button(yellow, [230, 525, 260, 50])
     exitButton = button(red, [290, 600, 140, 30])
     helpExit = button(red, [580, 650, 120, 40])
     
+    pauseContinue = button(goldBrown, [160, 350, 400, 50])
+    pauseMainMenu = button(red, [160, 425, 400, 50])
     
     playerOneContinue = button(green, contButtonRect)
     playerTwoContinue = button(green, contButtonRect)
@@ -223,19 +248,19 @@ def main():
             renderedExit = buttonFont.render('Exit', 12, black)
             
             if continueGameButton.buttonCollidePoint(mousePos) == True:
-                programState = 'Player 1 Continue'
+                programState = previousState
                 
-            if newGameButton.buttonCollidePoint(mousePos) == True:
+            elif newGameButton.buttonCollidePoint(mousePos) == True:
                 redPiece = [ [0, 0, 'Alive'], [2, 0, 'Alive'], [4, 0, 'Alive'], [6, 0, 'Alive'], [1, 1, 'Alive'], [3, 1, 'Alive'], [5, 1, 'Alive'], [7, 1, 'Alive'] ]
                 redColour = [red, red, red, red, red, red, red, red]
                 blackPiece = [ [0, 6, 'Alive'], [2, 6, 'Alive'], [4, 6, 'Alive'], [6, 6, 'Alive'], [1, 7, 'Alive'], [3, 7, 'Alive'], [5, 7, 'Alive'], [7, 7, 'Alive'] ]
                 blackColour = [black, black, black, black, black, black, black, black]
                 programState = 'Player 1 Continue'
                 
-            if helpButton.buttonCollidePoint(mousePos) == True:
+            elif helpButton.buttonCollidePoint(mousePos) == True:
                 programState = 'Help Menu'
                 
-            if exitButton.buttonCollidePoint(mousePos) == True:
+            elif exitButton.buttonCollidePoint(mousePos) == True:
                 break
             
             #-----Drawing-----
@@ -253,6 +278,7 @@ def main():
             mainSurface.blit(renderedHelp, (260, 535))
             mainSurface.blit(renderedExit, (340, 600))
             
+            
         elif programState == 'Help Menu':
             # Update your game objects and data structures here...
             
@@ -264,9 +290,30 @@ def main():
             mainSurface.fill((0, 0, 0))
             
             helpExit.draw(mainSurface)
+        
+        
+        elif programState == 'Pause Menu':
+            # Update your game objects and data structures here...
+            
+            if pauseContinue.buttonCollidePoint(mousePos) == True:
+                programState = previousState
+            elif pauseMainMenu.buttonCollidePoint(mousePos) == True:
+                programState = 'Start Menu'
+            
+            #-----Drawing-----
+            # So first fill everything with the background color
+            mainSurface.fill((0, 0, 0))
+            pauseContinue.draw(mainSurface)
+            pauseMainMenu.draw(mainSurface)
+            
             
         elif programState == 'Player 1 Continue':
             # Update your game objects and data structures here...
+            
+            if ev.type == pygame.KEYUP:
+                previousState = programState
+                programState = pauseCheck(ev.scancode, programState)
+            
             playerTurn = '1'
             renderedTurnContinue = buttonFont.render('Take Turn!', 12, black)
             renderedTurnDeclare = titleFont.render(f"Player {playerTurn}'s Turn", 12, white)
@@ -289,9 +336,14 @@ def main():
             mainSurface.blit(renderedTurnDeclare, (160, 120))
             mainSurface.blit(renderedTurnContinue, (300, 430))
             
+            
         elif programState == 'Player 1 Turn':
             # Update your game objects and data structures here...
-        
+            
+            if ev.type == pygame.KEYUP:
+                previousState = programState
+                programState = pauseCheck(ev.scancode, programState)
+            
             if ev.type == pygame.MOUSEBUTTONDOWN: # Is there a mouse event
                 if pieceChosen == False: # If no piece has been selected
                     for i in range(0, len(blackPiece), 1): # Check all black piece indexes
@@ -452,6 +504,10 @@ def main():
         
         elif programState == 'Player 2 Continue':
             # Update your game objects and data structures here...
+            if ev.type == pygame.KEYUP:
+                previousState = programState
+                programState = pauseCheck(ev.scancode, programState)
+            
             playerTurn = '2'
             renderedTurnContinue = buttonFont.render('Take Turn!', 12, black)
             renderedTurnDeclare = titleFont.render(f"Player {playerTurn}'s Turn", 12, red)
@@ -477,6 +533,9 @@ def main():
         
         elif programState == 'Player 2 Turn':
             # Update your game objects and data structures here...
+            if ev.type == pygame.KEYUP:
+                previousState = programState
+                programState = pauseCheck(ev.scancode, programState)
             
             if ev.type == pygame.MOUSEBUTTONDOWN: # Is there a mouse event
                 if pieceChosen == False: # If no piece has been selected
