@@ -1,1 +1,0 @@
-[0, 0, 'Alive'], [2, 0, 'Alive'], [4, 0, 'Alive'], [6, 0, 'Alive'], [1, 1, 'Alive'], [3, 1, 'Alive'], [5, 1, 'Alive'], [7, 1, 'Alive']
