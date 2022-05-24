@@ -56,6 +56,7 @@ def main():
     # Create surface of (width, height), and its window.
     mainSurface = pygame.display.set_mode((surfaceSize, surfaceSize))
     
+    
     #--Variables--
     
     programState = 'Start Menu'
@@ -101,15 +102,15 @@ def main():
     
     #Piece Variables
     
-    # Red pieces
+    # Base Red Piece values (for reference, variables will get reset in file reading)
     redPiece = [ [0, 0,], [2, 0], [4, 0], [6, 0], [1, 1], [3, 1], [5, 1], [7, 1] ] # Red piece coordinates
     redStatus = [ 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive'] # Red piece alive/dead list
     redColour = [red, red, red, red, red, red, red, red] #Colours of the red pieces (For piece highlighting)
     
-    # Black pieces
+    # Base Black Piece values (for reference, variables will get reset in file reading)
     blackPiece = [ [0, 6], [2, 6], [4, 6], [6, 6], [1, 7], [3, 7], [5, 7], [7, 7] ] # Black piece coordinates
-    blackStatus = [ 'dead', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive'] # Bkack piece alive/dead list
-    blackColour = [black, black, black, black, black, black, black, black] #Colours of the black pieces (For piece highlighting)
+    blackStatus = [ 'dead', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive'] # Black piece alive/dead list
+    blackColour = [black, black, black, black, black, black, black, black] #Colours of the black pieces (for piece highlighting)
     
     pieceRadius = 30 # Radius of the pieces
     pieceChosen = False # Statement on if a piece has been chosen or not
@@ -117,9 +118,16 @@ def main():
     farSideBlocked = False # Statement regarding if a piece is in the way of jumping
     enemyPieceInWay = False
     
+    
     #-----Reading Files-----
+    # Reset the variables to be read into
     redPiece = []
+    redStatus = []
     blackPiece = []
+    blackStatus = []
+    
+    
+    #-Coordinate Reading-
     
     # Read the red coordinates
     coordinateGrouper = []
@@ -127,15 +135,16 @@ def main():
     while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
         theLine = redCoordFile.readline()
         theLine = theLine.strip('\n')
-        if len(theLine) == 0:
+        if len(theLine) == 0: # If there is nothing on the currently red line, add the last read line and break
+            redPiece.append(coordinateGrouper)
             break
-        theLine = int(theLine) # Redefine as an int variable (so it can be used in the game)
         
+        theLine = int(theLine) # Redefine as an int variable (so it can be used in the game)
         if len(coordinateGrouper) >= 2: # Check if the coordinate grouper does not include 2 variables, if so errase/reset it
+            redPiece.append(coordinateGrouper) # Add the list to the redPiece list (should be a list of lists that comprise of two integers)
             coordinateGrouper = []
             
-        coordinateGrouper.append(theLine)
-        redPiece.append(coordinateGrouper)
+        coordinateGrouper.append(theLine) # Add the data to the coordinateGrouper list
     redCoordFile.close()
     
     # Read the black coordinates
@@ -144,20 +153,54 @@ def main():
     while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
         theLine = blackCoordFile.readline()
         theLine = theLine.strip('\n')
-        if len(theLine) == 0:
+        if len(theLine) == 0: # If there is nothing on the currently red line, add the last read line and break
+            blackPiece.append(coordinateGrouper)
             break
-        theLine = int(theLine) # Redefine as an int variable (so it can be used in the game)
         
+        theLine = int(theLine) # Redefine as an int variable (so it can be used in the game)
         if len(coordinateGrouper) >= 2: # Check if the coordinate grouper does not include 2 variables, if so errase/reset it
+            blackPiece.append(coordinateGrouper) # Add the list to the redPiece list (should be a list of lists that comprise of two integers)
             coordinateGrouper = []
             
-        coordinateGrouper.append(theLine)
-        blackPiece.append(coordinateGrouper)
+        coordinateGrouper.append(theLine) # Add the data to the coordinateGrouper list
     blackCoordFile.close()
-#     print(blackPiece)
-    #print(blackPiece[0][1]+blackPiece[1][1])
     
-    #--Object Classes--
+    
+    #-Status Reading-
+    
+    # Read the red status
+    redStatFile = open('last_game_info/redPieceStatus.txt', 'r')
+    while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
+        theLine = redStatFile.readline()
+        theLine = theLine.strip('\n')
+        if len(theLine) == 0: #If there is nothing on the line, break
+            break
+        
+        redStatus.append(theLine) # Add the line to the redStatus
+    redStatFile.close()
+    
+    # Read the black status
+    blackStatFile = open('last_game_info/blackPieceStatus.txt', 'r')
+    while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
+        theLine = blackStatFile.readline()
+        theLine = theLine.strip('\n')
+        if len(theLine) == 0: #If there is nothing on the line, break
+            break
+        
+        blackStatus.append(theLine) # Add the line to the blackStatus
+    blackStatFile.close()
+    
+    
+    #-Other File Reading-
+    
+    # Read the previous program state
+    prevStateFile = open('last_game_info/previousGameState.txt', 'r')
+    previousState = prevStateFile.readline()
+    prevStateFile.close()
+    
+    
+    
+    #----Object Classes----
     
     class button(): #Class object for tiles and buttons
         def __init__(self, inputColour, inputRect):
@@ -298,6 +341,33 @@ def main():
                 programState = 'Help Menu'
                 
             elif exitButton.buttonCollidePoint(mousePos) == True:
+                
+                # Write last known red coordinates
+                redCoordFile = open('last_game_info/redPieceCoordinates.txt', 'w')
+                for i in range(0, 8, 1):
+                    redCoordFile.write(f'{redPiece[i][0]}\n{redPiece[i][1]}\n')
+                redCoordFile.close()
+                
+                # Write last known black coordinates
+                blackCoordFile = open('last_game_info/blackPieceCoordinates.txt', 'w')
+                for i in range(0, 8, 1):
+                    blackCoordFile.write(f'{blackPiece[i][0]}\n{blackPiece[i][1]}\n')
+                blackCoordFile.close()
+                
+                # Write last known red status list
+                redStatFile = open('last_game_info/redPieceStatus.txt', 'w')
+                
+                #redStatFile.write(f'dead\nAlive\nAlive\nAlive\nAlive\nAlive\nAlive\nAlive\n')
+                for i in range(0, 8, 1):
+                    redStatFile.write(f'{redStatus[i]}\n')
+                redStatFile.close()
+                
+                # Write last known black status list
+                blackStatFile = open('last_game_info/blackPieceStatus.txt', 'w')
+                for i in range(0, 8, 1):
+                    blackStatFile.write(f'{blackStatus[i]}\n')
+                blackStatFile.close()
+                
                 break
             
             #-----Drawing-----
