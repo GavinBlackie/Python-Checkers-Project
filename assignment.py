@@ -100,7 +100,7 @@ def main():
     
     board = [ board0, board1, board2, board3, board4, board5, board6, board7] # List of lists, the board as a list
     
-    #Piece Variables
+    # Piece Variables
     
     # Base Red Piece values (for reference, variables will get reset in file reading)
     redPiece = [ [0, 0,], [2, 0], [4, 0], [6, 0], [1, 1], [3, 1], [5, 1], [7, 1] ] # Red piece coordinates
@@ -115,90 +115,13 @@ def main():
     pieceRadius = 30 # Radius of the pieces
     pieceChosen = False # Statement on if a piece has been chosen or not
     canMove = True # Statement on if a piece has been allowed to move upon an input
-    farSideBlocked = False # Statement regarding if a piece is in the way of jumping
-    enemyPieceInWay = False
+    farSideBlocked = False # Statement regarding if a piece (enemy or teamate piece) is in the way of jumping
+    enemyPieceInWay = False # Statement of wheter or not an enemy piece is in the way
     
+    # Other Variables
     
-    #-----Reading Files-----
-    # Reset the variables to be read into
-    redPiece = []
-    redStatus = []
-    blackPiece = []
-    blackStatus = []
-    
-    
-    #-Coordinate Reading-
-    
-    # Read the red coordinates
-    coordinateGrouper = []
-    redCoordFile = open('last_game_info/redPieceCoordinates.txt', 'r')
-    while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
-        theLine = redCoordFile.readline()
-        theLine = theLine.strip('\n')
-        if len(theLine) == 0: # If there is nothing on the currently red line, add the last read line and break
-            redPiece.append(coordinateGrouper)
-            break
-        
-        theLine = int(theLine) # Redefine as an int variable (so it can be used in the game)
-        if len(coordinateGrouper) >= 2: # Check if the coordinate grouper does not include 2 variables, if so errase/reset it
-            redPiece.append(coordinateGrouper) # Add the list to the redPiece list (should be a list of lists that comprise of two integers)
-            coordinateGrouper = []
-            
-        coordinateGrouper.append(theLine) # Add the data to the coordinateGrouper list
-    redCoordFile.close()
-    
-    # Read the black coordinates
-    coordinateGrouper = []
-    blackCoordFile = open('last_game_info/blackPieceCoordinates.txt', 'r')
-    while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
-        theLine = blackCoordFile.readline()
-        theLine = theLine.strip('\n')
-        if len(theLine) == 0: # If there is nothing on the currently red line, add the last read line and break
-            blackPiece.append(coordinateGrouper)
-            break
-        
-        theLine = int(theLine) # Redefine as an int variable (so it can be used in the game)
-        if len(coordinateGrouper) >= 2: # Check if the coordinate grouper does not include 2 variables, if so errase/reset it
-            blackPiece.append(coordinateGrouper) # Add the list to the redPiece list (should be a list of lists that comprise of two integers)
-            coordinateGrouper = []
-            
-        coordinateGrouper.append(theLine) # Add the data to the coordinateGrouper list
-    blackCoordFile.close()
-    
-    
-    #-Status Reading-
-    
-    # Read the red status
-    redStatFile = open('last_game_info/redPieceStatus.txt', 'r')
-    while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
-        theLine = redStatFile.readline()
-        theLine = theLine.strip('\n')
-        if len(theLine) == 0: #If there is nothing on the line, break
-            break
-        
-        redStatus.append(theLine) # Add the line to the redStatus
-    redStatFile.close()
-    
-    # Read the black status
-    blackStatFile = open('last_game_info/blackPieceStatus.txt', 'r')
-    while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
-        theLine = blackStatFile.readline()
-        theLine = theLine.strip('\n')
-        if len(theLine) == 0: #If there is nothing on the line, break
-            break
-        
-        blackStatus.append(theLine) # Add the line to the blackStatus
-    blackStatFile.close()
-    
-    
-    #-Other File Reading-
-    
-    # Read the previous program state
-    prevStateFile = open('last_game_info/previousGameState.txt', 'r')
-    previousState = prevStateFile.readline()
-    prevStateFile.close()
-    
-    
+    readingFiles = True # True-false statement to control the amount of tiles the files are read in the start menu (should be only once)
+    helpMenu = pygame.image.load('images/help_menu.png')
     
     #----Object Classes----
     
@@ -228,8 +151,9 @@ def main():
             Function that returns True or False depending on whether or not the if statements are fullfilled.
               
             Takes the inPnt parameter, if it is within the boundaries of the button
-            class's variables, checks if there is a mouse input & returns True if so
-            (pressing button), else return False (not pressing button)
+            class's variables, checks if there is a mouse input as well as if it was
+            the left click on the mouse. Then returns True if so (pressing button),
+            else return False (not pressing button)
 
 
             Parameters
@@ -244,7 +168,8 @@ def main():
             '''
             if inPnt[0] > self.rect[0] and inPnt[0] < self.rect[0]+self.rect[2] and inPnt[1] < self.rect[1]+self.rect[3] and inPnt[1] > self.rect[1]:#Is the inpt colliding with button?
                 if ev.type == pygame.MOUSEBUTTONDOWN: #Is there a mouse event?
-                    return True
+                    if ev.button == 1: # If the left mouse is clicked, return true
+                        return True
             else: return False
             
     
@@ -319,16 +244,102 @@ def main():
         if programState == 'Start Menu':
             # Update your game objects and data structures here...
             
-            renderedTitle = titleFont.render('Title', 12, white)
+            #-----Reading Files-----
+            
+            if readingFiles == True: # If statement that only runs once within the start menu so as to not lag it
+                # Reset the variables to be read into
+                redPiece = []
+                redStatus = []
+                blackPiece = []
+                blackStatus = []
+                
+                
+                #-Coordinate Reading-
+                
+                # Read the red coordinates
+                coordinateGrouper = []
+                redCoordFile = open('last_game_info/redPieceCoordinates.txt', 'r')
+                while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
+                    theLine = redCoordFile.readline()
+                    theLine = theLine.strip('\n')
+                    if len(theLine) == 0: # If there is nothing on the currently red line, add the last read line and break
+                        redPiece.append(coordinateGrouper)
+                        break
+                    
+                    theLine = int(theLine) # Redefine as an int variable (so it can be used in the game)
+                    if len(coordinateGrouper) >= 2: # Check if the coordinate grouper does not include 2 variables, if so errase/reset it
+                        redPiece.append(coordinateGrouper) # Add the list to the redPiece list (should be a list of lists that comprise of two integers)
+                        coordinateGrouper = []
+                        
+                    coordinateGrouper.append(theLine) # Add the data to the coordinateGrouper list
+                redCoordFile.close()
+                
+                # Read the black coordinates
+                coordinateGrouper = []
+                blackCoordFile = open('last_game_info/blackPieceCoordinates.txt', 'r')
+                while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
+                    theLine = blackCoordFile.readline()
+                    theLine = theLine.strip('\n')
+                    if len(theLine) == 0: # If there is nothing on the currently red line, add the last read line and break
+                        blackPiece.append(coordinateGrouper)
+                        break
+                    
+                    theLine = int(theLine) # Redefine as an int variable (so it can be used in the game)
+                    if len(coordinateGrouper) >= 2: # Check if the coordinate grouper does not include 2 variables, if so errase/reset it
+                        blackPiece.append(coordinateGrouper) # Add the list to the redPiece list (should be a list of lists that comprise of two integers)
+                        coordinateGrouper = []
+                        
+                    coordinateGrouper.append(theLine) # Add the data to the coordinateGrouper list
+                blackCoordFile.close()
+                
+                
+                #-Status Reading-
+                
+                # Read the red status
+                redStatFile = open('last_game_info/redPieceStatus.txt', 'r')
+                while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
+                    theLine = redStatFile.readline()
+                    theLine = theLine.strip('\n')
+                    if len(theLine) == 0: #If there is nothing on the line, break
+                        break
+                    
+                    redStatus.append(theLine) # Add the line to the redStatus
+                redStatFile.close()
+                
+                # Read the black status
+                blackStatFile = open('last_game_info/blackPieceStatus.txt', 'r')
+                while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
+                    theLine = blackStatFile.readline()
+                    theLine = theLine.strip('\n')
+                    if len(theLine) == 0: #If there is nothing on the line, break
+                        break
+                    
+                    blackStatus.append(theLine) # Add the line to the blackStatus
+                blackStatFile.close()
+                
+                
+                #-Other File Reading-
+                
+                # Read the previous program state
+                prevStateFile = open('last_game_info/previousGameState.txt', 'r')
+                previousState = prevStateFile.readline()
+                prevStateFile.close()
+                
+                readingFiles = False # Stop this if statement from running over and over again in the menu (set the if-statement requirement to false)
+                
+                #------------------
+                
+            # Render Texts 
+            renderedTitle = titleFont.render('Checkers!', 12, white)
             renderedContinueGame = buttonFont.render('Continue Previous Game', 12, black)
             renderedNew = buttonFont.render('New Game', 12, black)
             renderedHelp = buttonFont.render('Help & Instructions', 12, black)
             renderedExit = buttonFont.render('Exit', 12, black)
             
-            if continueGameButton.buttonCollidePoint(mousePos) == True:
+            if continueGameButton.buttonCollidePoint(mousePos) == True: # Check if the continue game button has been pressed (will start with the newly read variables)
                 programState = previousState
                 
-            elif newGameButton.buttonCollidePoint(mousePos) == True:
+            elif newGameButton.buttonCollidePoint(mousePos) == True: # Check if the new game button has been pressed (will reset the newly read variables)
                 redPiece = [ [0, 0,], [2, 0], [4, 0], [6, 0], [1, 1], [3, 1], [5, 1], [7, 1] ]
                 redStatus = [ 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive']
                 redColour = [red, red, red, red, red, red, red, red]
@@ -337,10 +348,68 @@ def main():
                 blackColour = [black, black, black, black, black, black, black, black]
                 programState = 'Player 1 Continue'
                 
-            elif helpButton.buttonCollidePoint(mousePos) == True:
+            elif helpButton.buttonCollidePoint(mousePos) == True: # Check if the help button has been pressed, if so go to the help menu
                 programState = 'Help Menu'
                 
-            elif exitButton.buttonCollidePoint(mousePos) == True:
+            elif exitButton.buttonCollidePoint(mousePos) == True: # If the Exit button has been pressed, break (just an alternative to the top right "X")
+                break
+            
+            #-----Drawing-----
+            # So first fill everything with the background color
+            mainSurface.fill((0, 0, 0))
+            
+            # Draw buttons
+            newGameButton.draw(mainSurface)
+            continueGameButton.draw(mainSurface)
+            helpButton.draw(mainSurface)
+            exitButton.draw(mainSurface)
+            
+            # Draw texts
+            mainSurface.blit(renderedTitle, (230, 100))
+            mainSurface.blit(renderedContinueGame, (235, 360))
+            mainSurface.blit(renderedNew, (300, 455))
+            mainSurface.blit(renderedHelp, (260, 535))
+            mainSurface.blit(renderedExit, (340, 600))
+            
+            
+        elif programState == 'Help Menu':
+            # Update your game objects and data structures here...
+            
+            # Render texts
+            renderedHelpTitle = titleFont.render('Help & How to Play', 12, yellow)
+            renderedBack = buttonFont.render('Back', 12, black)
+            
+            if helpExit.buttonCollidePoint(mousePos) == True:
+                programState = 'Start Menu'
+                readingFiles = True
+            
+            #-----Drawing-----
+            # So first fill everything with the background color
+            mainSurface.fill((0, 0, 0))
+            
+            # Draw back button
+            helpExit.draw(mainSurface)
+            
+            # Draw texts
+            mainSurface.blit(renderedHelpTitle, (100, 100))
+            mainSurface.blit(renderedBack, (615, 655))
+            
+            mainSurface.blit(helpMenu, (90, 190)) # Draw the help menu png
+        
+        elif programState == 'Pause Menu':
+            # Update your game objects and data structures here...
+            
+            # Render texts
+            renderedResume = buttonFont.render('Resume Current Game', 12, black)
+            renderedSaveQuit = buttonFont.render('Save & Quit to Menu', 12, black)
+            
+            if pauseContinue.buttonCollidePoint(mousePos) == True: # Check if the contine game button has been pressed, if so return to the previous programState
+                programState = previousState
+            elif pauseMainMenu.buttonCollidePoint(mousePos) == True: # Check if the main menu button has been pressed, if so return to the start menu and write down the last game stats
+                programState = 'Start Menu'
+                readingFiles = True
+                
+                #-File Writing-
                 
                 # Write last known red coordinates
                 redCoordFile = open('last_game_info/redPieceCoordinates.txt', 'w')
@@ -356,8 +425,6 @@ def main():
                 
                 # Write last known red status list
                 redStatFile = open('last_game_info/redPieceStatus.txt', 'w')
-                
-                #redStatFile.write(f'dead\nAlive\nAlive\nAlive\nAlive\nAlive\nAlive\nAlive\n')
                 for i in range(0, 8, 1):
                     redStatFile.write(f'{redStatus[i]}\n')
                 redStatFile.close()
@@ -368,51 +435,24 @@ def main():
                     blackStatFile.write(f'{blackStatus[i]}\n')
                 blackStatFile.close()
                 
-                break
-            
+                # Write last known programState
+                prevStateFile = open('last_game_info/previousGameState.txt', 'w')
+                prevStateFile.write(previousState)
+                prevStateFile.close()
+                
+                #-------------
+                
             #-----Drawing-----
             # So first fill everything with the background color
             mainSurface.fill((0, 0, 0))
             
-            newGameButton.draw(mainSurface)
-            continueGameButton.draw(mainSurface)
-            helpButton.draw(mainSurface)
-            exitButton.draw(mainSurface)
-            
-            mainSurface.blit(renderedTitle, (300, 100))
-            mainSurface.blit(renderedContinueGame, (235, 360))
-            mainSurface.blit(renderedNew, (300, 455))
-            mainSurface.blit(renderedHelp, (260, 535))
-            mainSurface.blit(renderedExit, (340, 600))
-            
-            
-        elif programState == 'Help Menu':
-            # Update your game objects and data structures here...
-            
-            if helpExit.buttonCollidePoint(mousePos) == True:
-                programState = 'Start Menu'
-            
-            #-----Drawing-----
-            # So first fill everything with the background color
-            mainSurface.fill((0, 0, 0))
-            
-            helpExit.draw(mainSurface)
-        
-        
-        elif programState == 'Pause Menu':
-            # Update your game objects and data structures here...
-            
-            if pauseContinue.buttonCollidePoint(mousePos) == True:
-                programState = previousState
-            elif pauseMainMenu.buttonCollidePoint(mousePos) == True:
-                programState = 'Start Menu'
-            
-            #-----Drawing-----
-            # So first fill everything with the background color
-            mainSurface.fill((0, 0, 0))
+            # Draw buttons
             pauseContinue.draw(mainSurface)
             pauseMainMenu.draw(mainSurface)
             
+            # Draw texts
+            mainSurface.blit(renderedResume, (250, 360))
+            mainSurface.blit(renderedSaveQuit, (250, 435))
             
         elif programState == 'Player 1 Continue':
             # Update your game objects and data structures here...
