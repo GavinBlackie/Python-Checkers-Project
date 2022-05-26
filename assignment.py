@@ -17,7 +17,7 @@
 import pygame
 import math
 
-def distFromPoints(point1, point2):
+def distFromPoints(point1, point2): # Function from python lessons, used for circle collision detection in relation to the pieces
     '''
     This function calculationes the distance between two points given by a set of tuples (x1,y1) and (x2,y2)
     
@@ -36,13 +36,6 @@ def distFromPoints(point1, point2):
     
     return distance
 
-def pauseCheck(scanCode, currentState):
-    '''
-    '''
-    if scanCode == 41:
-        return 'Pause Menu'
-    else: return currentState
-
 def main():
     """ Set up the game and run the main game loop """
     pygame.init()      # Prepare the pygame module for use
@@ -57,8 +50,9 @@ def main():
     mainSurface = pygame.display.set_mode((surfaceSize, surfaceSize))
     
     
-    #--Variables--
+                                    #------------Variables------------
     
+    # Various Game State Variables
     programState = 'Start Menu'
     previousState = ''
     playerTurn = '1'
@@ -80,7 +74,7 @@ def main():
     tileShift = False
     
     #Continue Button Variables
-    contButtonRect = [160, 420, 400, 50]
+    contButtonRect = [160, 410, 400, 70]
     
     #Fonts and Text
     titleFont = pygame.font.SysFont("Times New Roman", 65)
@@ -118,20 +112,85 @@ def main():
     farSideBlocked = False # Statement regarding if a piece (enemy or teamate piece) is in the way of jumping
     enemyPieceInWay = False # Statement of wheter or not an enemy piece is in the way
     
-    # Other Variables/Stuff
+    # Other Variables
     
     readingFiles = True # True-false statement to control the amount of tiles the files are read in the start menu (should be only once)
-    helpMenu = pygame.image.load('images/help_menu.png')
+    helpMenu = pygame.image.load('images/help_menu.png') # the variable of the png for the help menu
+    gameWinner = '' # String to be used when a winner is declared on the end screen
+    turnTextPos = (540, 670) # Tuple of where the turn show text is when it is either player 1 or player 2 turn
+    
+                                     #--------------------------------
+    
+    
+    #----------Functions----------
     
     def deadCheck():
         '''
+        If a player's pieces are dead, return a str value to tell which player died.
+        
+        Simple function that checks if all the black pieces are dead and
+        it will also check if the red pieces are dead. Then it will return
+        the correct string for the rest of the code to work out who wins.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        str
+            Statement on which player's pieces are dead
         '''
         if blackStatus == ['Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead']:
-            return True
-        elif redStatus == ['Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead']:
-            return False
+            return 'Player 1 is dead'
+        if redStatus == ['Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead']:
+            return 'Player 2 is dead'
     
-    gameWinner = ''
+    def writeInfo():
+        '''
+        Function that writes the last stats known to the game into their respective
+        text files.
+        
+        Function that overwrites the last known values of the black coords, red coords,
+        the red status, the black status and the previous program state. Uses for loops
+        that run for eight times for all writes that require eight different pairs of
+        numbers (with the exception of the previous program state).
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+        '''
+        # Write reset version of red coordinates
+        redCoordFile = open('last_game_info/redPieceCoordinates.txt', 'w')
+        for i in range(0, 8, 1):
+            redCoordFile.write(f'{redPiece[i][0]}\n{redPiece[i][1]}\n')
+        redCoordFile.close()
+        # Write reset version of black coordinates
+        blackCoordFile = open('last_game_info/blackPieceCoordinates.txt', 'w')
+        for i in range(0, 8, 1):
+            blackCoordFile.write(f'{blackPiece[i][0]}\n{blackPiece[i][1]}\n')
+        blackCoordFile.close()
+        # Write reset version of red status list
+        redStatFile = open('last_game_info/redPieceStatus.txt', 'w')
+        for i in range(0, 8, 1):
+            redStatFile.write(f'{redStatus[i]}\n')
+        redStatFile.close()
+        # Write reset version of black status list
+        blackStatFile = open('last_game_info/blackPieceStatus.txt', 'w')
+        for i in range(0, 8, 1):
+            blackStatFile.write(f'{blackStatus[i]}\n')
+        blackStatFile.close()
+        # Write reset version of programState
+        prevStateFile = open('last_game_info/previousGameState.txt', 'w')
+        prevStateFile.write(previousState)
+        prevStateFile.close()
+    
+    #----------------------------
+    
     
     #----Object Classes----
     
@@ -411,8 +470,8 @@ def main():
         elif programState == 'Pause Menu':
             # Update your game objects and data structures here...
             
-            
             # Render texts
+            renderedPauseTitle = titleFont.render('Paused', 12, white)
             renderedResume = buttonFont.render('Resume Current Game', 12, black)
             renderedSaveQuit = buttonFont.render('Save & Quit to Menu', 12, black)
             
@@ -423,35 +482,7 @@ def main():
                 readingFiles = True
                 
                 #-File Writing-
-                
-                # Write last known red coordinates
-                redCoordFile = open('last_game_info/redPieceCoordinates.txt', 'w')
-                for i in range(0, 8, 1):
-                    redCoordFile.write(f'{redPiece[i][0]}\n{redPiece[i][1]}\n')
-                redCoordFile.close()
-                
-                # Write last known black coordinates
-                blackCoordFile = open('last_game_info/blackPieceCoordinates.txt', 'w')
-                for i in range(0, 8, 1):
-                    blackCoordFile.write(f'{blackPiece[i][0]}\n{blackPiece[i][1]}\n')
-                blackCoordFile.close()
-                
-                # Write last known red status list
-                redStatFile = open('last_game_info/redPieceStatus.txt', 'w')
-                for i in range(0, 8, 1):
-                    redStatFile.write(f'{redStatus[i]}\n')
-                redStatFile.close()
-                
-                # Write last known black status list
-                blackStatFile = open('last_game_info/blackPieceStatus.txt', 'w')
-                for i in range(0, 8, 1):
-                    blackStatFile.write(f'{blackStatus[i]}\n')
-                blackStatFile.close()
-                
-                # Write last known programState
-                prevStateFile = open('last_game_info/previousGameState.txt', 'w')
-                prevStateFile.write(previousState)
-                prevStateFile.close()
+                writeInfo()
                 
                 #-------------
                 
@@ -464,23 +495,25 @@ def main():
             pauseMainMenu.draw(mainSurface)
             
             # Draw texts
+            mainSurface.blit(renderedPauseTitle, (260, 100))
             mainSurface.blit(renderedResume, (250, 360))
             mainSurface.blit(renderedSaveQuit, (250, 435))
             
         elif programState == 'Player 1 Continue':
             # Update your game objects and data structures here...
             
-            if deadCheck() == True:
+            if deadCheck() == 'Player 1 is dead':
                 programState = 'End Screen'
                 gameWinner = '2'
-            elif deadCheck() == False:
+            elif deadCheck() == 'Player 2 is dead':
                 programState = 'End Screen'
                 gameWinner = '1'
             
             
             if ev.type == pygame.KEYUP:
                 previousState = programState
-                programState = pauseCheck(ev.scancode, programState)
+                if ev.scancode == 41:
+                    programState = 'Pause Menu'
             
             playerTurn = '1'
             renderedTurnContinue = buttonFont.render('Take Turn!', 12, black)
@@ -508,9 +541,12 @@ def main():
         elif programState == 'Player 1 Turn':
             # Update your game objects and data structures here...
             
+            renderedTurnShow = buttonFont.render("Player 1's Turn", 12, white)
+            
             if ev.type == pygame.KEYUP:
                 previousState = programState
-                programState = pauseCheck(ev.scancode, programState)
+                if ev.scancode == 41:
+                    programState = 'Pause Menu'
             
             if ev.type == pygame.MOUSEBUTTONDOWN: # Is there a mouse event
                 if pieceChosen == False: # If no piece has been selected
@@ -659,6 +695,7 @@ def main():
             mainSurface.fill((0, 0, 0))
             
             pygame.draw.rect(mainSurface, white, (72, 72, tileWidth*8, tileHeight*8))# Draw the white "tiles" (Background square)
+            mainSurface.blit(renderedTurnShow, turnTextPos)
             
             for i in range(0, len(tiles), 1): # Draw grey tiles
                 tiles[i].drawTile(mainSurface)
@@ -673,16 +710,17 @@ def main():
         elif programState == 'Player 2 Continue':
             # Update your game objects and data structures here...
             
-            if deadCheck() == True:
+            if deadCheck() == 'Player 1 is dead':
                 programState = 'End Screen'
                 gameWinner = '2'
-            elif deadCheck() == False:
+            elif deadCheck() == 'Player 2 is dead':
                 programState = 'End Screen'
                 gameWinner = '1'
             
             if ev.type == pygame.KEYUP:
                 previousState = programState
-                programState = pauseCheck(ev.scancode, programState)
+                if ev.scancode == 41:
+                    programState = 'Pause Menu'
             
             playerTurn = '2'
             renderedTurnContinue = buttonFont.render('Take Turn!', 12, black)
@@ -710,11 +748,12 @@ def main():
         elif programState == 'Player 2 Turn':
             # Update your game objects and data structures here...
             
-            
+            renderedTurnShow = buttonFont.render("Player 2's Turn", 12, red)
             
             if ev.type == pygame.KEYUP:
                 previousState = programState
-                programState = pauseCheck(ev.scancode, programState)
+                if ev.scancode == 41:
+                    programState = 'Pause Menu'
             
             if ev.type == pygame.MOUSEBUTTONDOWN: # Is there a mouse event
                 if pieceChosen == False: # If no piece has been selected
@@ -855,6 +894,7 @@ def main():
             mainSurface.fill((0, 0, 0))
             
             pygame.draw.rect(mainSurface, white, (72, 72, tileWidth*8, tileHeight*8))# Draw the white "tiles" (Background square)
+            mainSurface.blit(renderedTurnShow, turnTextPos)
             
             for i in range(0, len(tiles), 1): # Draw grey tiles
                 tiles[i].drawTile(mainSurface)
@@ -868,6 +908,14 @@ def main():
             
         elif programState == 'End Screen':
             # Update your game objects and data structures here...
+                
+            # Reset variables so last game will be overwritten
+            redPiece = [ [0, 0,], [2, 0], [4, 0], [6, 0], [1, 1], [3, 1], [5, 1], [7, 1] ]
+            redStatus = [ 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive']
+            blackPiece = [ [0, 6], [2, 6], [4, 6], [6, 6], [1, 7], [3, 7], [5, 7], [7, 7] ]
+            blackStatus = [ 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive']
+            
+            writeInfo() # Write the game info using the writeInfo function
             
             # Text rendering
             renderedWin = titleFont.render(f'Player {gameWinner}Wins!', 12, white)
