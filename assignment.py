@@ -102,7 +102,7 @@ def main():
     
     # Piece Variables
     
-    # Base Red Piece values (for reference, variables will get reset in file reading)
+    # Base Red Piece values
     redPiece = [ [0, 0,], [2, 0], [4, 0], [6, 0], [1, 1], [3, 1], [5, 1], [7, 1] ] # Red piece coordinates
     redStatus = [ 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive'] # Red piece alive/dead list
     redColour = [red, red, red, red, red, red, red, red] #Colours of the red pieces (For piece highlighting)
@@ -118,10 +118,20 @@ def main():
     farSideBlocked = False # Statement regarding if a piece (enemy or teamate piece) is in the way of jumping
     enemyPieceInWay = False # Statement of wheter or not an enemy piece is in the way
     
-    # Other Variables
+    # Other Variables/Stuff
     
     readingFiles = True # True-false statement to control the amount of tiles the files are read in the start menu (should be only once)
     helpMenu = pygame.image.load('images/help_menu.png')
+    
+    def deadCheck():
+        '''
+        '''
+        if blackStatus == ['Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead']:
+            return True
+        elif redStatus == ['Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead']:
+            return False
+    
+    gameWinner = ''
     
     #----Object Classes----
     
@@ -210,12 +220,14 @@ def main():
     playerOneContinue = button(green, contButtonRect)
     playerTwoContinue = button(green, contButtonRect)
     
+    endBackButton = button(red, [180, 440, 360, 60])
+    
     #--Tiles--
     
     tiles = [] # List of tiles/tile information for the program to draw from
 
     for count in range(0, 8, 1):#For loop that repeats 8 times, the number of rows
-        for count in range(0, 4, 1): #For loop that repeats 8 times, the number of columns
+        for count in range(0, 4, 1): #For loop that repeats 4 times, the number of columns
             tiles.append(tile( grey, [tilePos[0], tilePos[1], tileWidth, tileHeight]))
             tilePos[0] += tileWidth*2
         
@@ -230,7 +242,7 @@ def main():
             
     
     while True:
-        #print(f'Program Ticks: {pygame.time.get_ticks()} - programState: {programState}')
+        #print(f'Program Ticks: {pygame.time.get_ticks()} - frameCount: {frameCount} - programState: {programState}')
         ev = pygame.event.poll()    # Look for any event
         if ev.type == pygame.QUIT:  # Window close button clicked?
             break                   #   ... leave game loop
@@ -399,6 +411,7 @@ def main():
         elif programState == 'Pause Menu':
             # Update your game objects and data structures here...
             
+            
             # Render texts
             renderedResume = buttonFont.render('Resume Current Game', 12, black)
             renderedSaveQuit = buttonFont.render('Save & Quit to Menu', 12, black)
@@ -456,6 +469,14 @@ def main():
             
         elif programState == 'Player 1 Continue':
             # Update your game objects and data structures here...
+            
+            if deadCheck() == True:
+                programState = 'End Screen'
+                gameWinner = '2'
+            elif deadCheck() == False:
+                programState = 'End Screen'
+                gameWinner = '1'
+            
             
             if ev.type == pygame.KEYUP:
                 previousState = programState
@@ -651,6 +672,14 @@ def main():
         
         elif programState == 'Player 2 Continue':
             # Update your game objects and data structures here...
+            
+            if deadCheck() == True:
+                programState = 'End Screen'
+                gameWinner = '2'
+            elif deadCheck() == False:
+                programState = 'End Screen'
+                gameWinner = '1'
+            
             if ev.type == pygame.KEYUP:
                 previousState = programState
                 programState = pauseCheck(ev.scancode, programState)
@@ -680,6 +709,9 @@ def main():
         
         elif programState == 'Player 2 Turn':
             # Update your game objects and data structures here...
+            
+            
+            
             if ev.type == pygame.KEYUP:
                 previousState = programState
                 programState = pauseCheck(ev.scancode, programState)
@@ -833,6 +865,28 @@ def main():
                 if blackStatus[i] == 'Alive': # Check if the piece is alive
                     pygame.draw.circle(mainSurface, blackColour[i], board[blackPiece[i][1]][blackPiece[i][0]], pieceRadius)
             
+            
+        elif programState == 'End Screen':
+            # Update your game objects and data structures here...
+            
+            # Text rendering
+            renderedWin = titleFont.render(f'Player {gameWinner}Wins!', 12, white)
+            renderedEndBack = buttonFont.render('Back to Menu', 12, black)
+            
+            if endBackButton.buttonCollidePoint(mousePos) == True: # Check if the back to menu button has been pressed
+                programState = 'Start Menu'
+                
+                
+            #-----Drawing-----
+            # So first fill everything with the background color
+            mainSurface.fill((0, 0, 0))
+            
+            # Button Drawing
+            endBackButton.draw(mainSurface)
+            
+            # Text drawing
+            mainSurface.blit(renderedWin, (165, 100))
+            mainSurface.blit(renderedEndBack, (285, 455))
             
         # Now the surface is ready, tell pygame to display it!
         pygame.display.flip()
