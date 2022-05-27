@@ -122,7 +122,140 @@ def main():
                                      #--------------------------------
     
     
-    #----------Functions----------
+    #--------------------Functions--------------------
+    
+    def leftMove(upDown, teamPiece, teamStatus, teamColour, preferedColour, enemyPiece, enemyStatus):
+        '''
+        '''
+                        
+        #---------------Left Side---------------
+            
+        if ev.unicode == 'a' or ev.scancode == 80: # Check for input
+            if teamPiece[selectedIndex][0]-1 >= 0: # If the tile is not on the left edge
+                canMove = True
+                farSideBlocked = False
+                enemyPieceInWay = False
+                
+                for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
+                    if teamStatus[i] == 'Alive':
+                        if teamPiece[i][0] == (teamPiece[selectedIndex][0]-1) and teamPiece[i][1] == (teamPiece[selectedIndex][1]+upDown): #Check for a black piece to the top left
+                            canMove = False
+                            pieceChosen = False
+                        
+                    if enemyStatus[i] == 'Alive':
+                        if enemyPiece[i][0] == (teamPiece[selectedIndex][0]-1) and enemyPiece[i][1] == (teamPiece[selectedIndex][1]+upDown):#Check for a red piece to the top left
+                            enemyPieceInWay = True
+                            enemyIndex = i #Temp record the index of the enemy piece (in the case it needs to be killed)
+                            
+                            for count in range(0, 8, 1): # Do this 8 times, number of pieces on each side - check if there is any team's piece in the way of a jump and is alive
+                                if enemyPiece[count][0] == (teamPiece[selectedIndex][0]-2) and enemyPiece[count][1] == (teamPiece[selectedIndex][1]-2) and enemyStatus[count] == 'Alive':
+                                    farSideBlocked = True
+                                if teamPiece[count][0] == (teamPiece[selectedIndex][0]-2) and teamPiece[count][1] == (teamPiece[selectedIndex][1]-2) and teamStatus[count] == 'Alive':
+                                    farSideBlocked = True
+                            
+                            canMove = False
+                            pieceChosen = False
+                
+                if farSideBlocked == False and enemyPieceInWay == True:
+                    if (teamPiece[selectedIndex][0]-2) >= 0 and (teamPiece[selectedIndex][1]+(2*upDown)) >= 0: # If the tile two to the left, two up is on the board, jump and reset
+                        teamPiece[selectedIndex][1] += (2*upDown)
+                        teamPiece[selectedIndex][0] -= 2
+                        enemyStatus[enemyIndex] = 'Dead' # Kill the red piece
+                        pieceChosen = False
+                        teamColour[selectedIndex] = preferedColour
+                        canMove = False
+                        return True
+                    else: # The piece cannot jump, reset
+                        pieceChosen = False
+                        teamColour[selectedIndex] = preferedColour
+                        canMove = False
+                        return False
+                        
+                if canMove == True:
+                    teamPiece[selectedIndex][1] += upDown
+                    teamPiece[selectedIndex][0] -= 1
+                    pieceChosen = False
+                    teamColour[selectedIndex] = preferedColour
+                    return True
+                        
+                else:# Reset the piece chosen
+                    pieceChosen = False
+                    teamColour[selectedIndex] = preferedColour
+                    return False
+                    
+            else:# Reset the piece chosen
+                pieceChosen = False
+                teamColour[selectedIndex] = preferedColour
+                return False
+                            
+        else: # Reset the piece chosen
+            pieceChosen = False
+            teamColour[selectedIndex] = preferedColour
+            return False
+            
+    def rightMove(upDown, teamPiece, teamStatus, teamColour, preferedColour, enemyPiece, enemyStatus):
+        '''
+        '''
+        
+        #---------------Right Side--------------
+                        
+        if ev.unicode == 'd' or ev.scancode == 79: # Check for input
+            if teamPiece[selectedIndex][0]+1 <= 7: # If the tile is not on the right edge
+                canMove = True
+                farSideBlocked = False
+                enemyPieceInWay = False
+                
+                for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
+                    if blackStatus[i] == 'Alive':
+                        if teamPiece[i][0] == (teamPiece[selectedIndex][0]+1) and teamPiece[i][1] == (teamPiece[selectedIndex][1]+upDown): #Check for a team piece to the top right  
+                            canMove = False
+                            pieceChosen = False
+                    
+                    if enemyStatus[i] == 'Alive':
+                        if enemyPiece[i][0] == (teamPiece[selectedIndex][0]+1) and enemyPiece[i][1] == (teamPiece[selectedIndex][1]+upDown):#Check for a enemy piece to the top right
+                            enemyPieceInWay = True
+                            enemyIndex = i #Temp record the index of the enemy piece (in the case it needs to be killed)
+                            
+                            for count in range(0, 8, 1): # Do this 8 times, number of pieces on each side
+                                if enemyPiece[count][0] == (teamPiece[selectedIndex][0]+2) and enemyPiece[count][1] == (teamPiece[selectedIndex][1]+(2*upDown)) and enemyStatus[count] == 'Alive':
+                                    farSideBlocked = True
+                                if teamPiece[count][0] == (teamPiece[selectedIndex][0]+2) and teamPiece[count][1] == (teamPiece[selectedIndex][1]+(2*upDown)) and teamStatus[count] == 'Alive':
+                                    farSideBlocked = True
+                                
+                            canMove = False
+                            pieceChosen = False
+                        
+                if farSideBlocked == False and enemyPieceInWay == True:
+                    if (teamPiece[selectedIndex][0]+2) <= 7 and (teamPiece[selectedIndex][1]+(2*upDown)) >= 0: # If the tile two to the right, two up is on the board, jump and reset
+                        teamPiece[selectedIndex][1] += 2*upDown
+                        teamPiece[selectedIndex][0] += 2
+                        enemyStatus[enemyIndex] = 'Dead' # Kill the red piece
+                        teamColour[selectedIndex] = preferedColour
+                        return True
+                        canMove = False
+                    else: # The piece cannot jump, reset
+                        pieceChosen = False
+                        teamColour[selectedIndex] = preferedColour
+                        canMove = False
+                        
+                if canMove == True:
+                    teamPiece[selectedIndex][1] += upDown
+                    teamPiece[selectedIndex][0] += 1
+                    pieceChosen = False
+                    teamColour[selectedIndex] = preferedColour
+                    return True
+                else: # Reset the piece chosen
+                    pieceChosen = False
+                    teamColour[selectedIndex] = preferedColour
+                    return False
+            else:# Reset the piece chosen
+                pieceChosen = False
+                teamColour[selectedIndex] = preferedColour
+                return False
+        else: # Reset the piece chosen
+            pieceChosen = False
+            teamColour[selectedIndex] = preferedColour
+            return False
     
     def deadCheck():
         '''
@@ -145,6 +278,84 @@ def main():
             return 'Player 1 is dead'
         if redStatus == ['Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead']:
             return 'Player 2 is dead'
+    
+    def readInfo():
+        '''
+        '''
+            
+        # Reset the variables to be read into
+        redPiece = []
+        redStatus = []
+        blackPiece = []
+        blackStatus = []
+        
+        
+        #-Coordinate Reading-
+        # Read the red coordinates
+        coordinateGrouper = []
+        redCoordFile = open('last_game_info/redPieceCoordinates.txt', 'r')
+        while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
+            theLine = redCoordFile.readline()
+            theLine = theLine.strip('\n')
+            if len(theLine) == 0: # If there is nothing on the currently red line, add the last read line and break
+                redPiece.append(coordinateGrouper)
+                break
+            
+            theLine = int(theLine) # Redefine as an int variable (so it can be used in the game)
+            if len(coordinateGrouper) >= 2: # Check if the coordinate grouper does not include 2 variables, if so errase/reset it
+                redPiece.append(coordinateGrouper) # Add the list to the redPiece list (should be a list of lists that comprise of two integers)
+                coordinateGrouper = []
+                
+            coordinateGrouper.append(theLine) # Add the data to the coordinateGrouper list
+        redCoordFile.close()
+        # Read the black coordinates
+        coordinateGrouper = []
+        blackCoordFile = open('last_game_info/blackPieceCoordinates.txt', 'r')
+        while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
+            theLine = blackCoordFile.readline()
+            theLine = theLine.strip('\n')
+            if len(theLine) == 0: # If there is nothing on the currently red line, add the last read line and break
+                blackPiece.append(coordinateGrouper)
+                break
+            
+            theLine = int(theLine) # Redefine as an int variable (so it can be used in the game)
+            if len(coordinateGrouper) >= 2: # Check if the coordinate grouper does not include 2 variables, if so errase/reset it
+                blackPiece.append(coordinateGrouper) # Add the list to the redPiece list (should be a list of lists that comprise of two integers)
+                coordinateGrouper = []
+                
+            coordinateGrouper.append(theLine) # Add the data to the coordinateGrouper list
+        blackCoordFile.close()
+        
+        
+        #-Status Reading-
+        # Read the red status
+        redStatFile = open('last_game_info/redPieceStatus.txt', 'r')
+        while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
+            theLine = redStatFile.readline()
+            theLine = theLine.strip('\n')
+            if len(theLine) == 0: #If there is nothing on the line, break
+                break
+            
+            redStatus.append(theLine) # Add the line to the redStatus
+        redStatFile.close()
+        # Read the black status
+        blackStatFile = open('last_game_info/blackPieceStatus.txt', 'r')
+        while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
+            theLine = blackStatFile.readline()
+            theLine = theLine.strip('\n')
+            if len(theLine) == 0: #If there is nothing on the line, break
+                break
+            
+            blackStatus.append(theLine) # Add the line to the blackStatus
+        blackStatFile.close()
+        
+        #-Other File Reading-
+        # Read the previous program state
+        prevStateFile = open('last_game_info/previousGameState.txt', 'r')
+        previousState = prevStateFile.readline()
+        prevStateFile.close()
+        
+        return blackPiece, redPiece, blackStatus, redStatus, previousState
     
     def writeInfo():
         '''
@@ -189,7 +400,7 @@ def main():
         prevStateFile.write(previousState)
         prevStateFile.close()
     
-    #----------------------------
+    #--------------------------------------
     
     
     #----Object Classes----
@@ -315,90 +526,15 @@ def main():
         if programState == 'Start Menu':
             # Update your game objects and data structures here...
             
-            #-----Reading Files-----
-            
-            if readingFiles == True: # If statement that only runs once within the start menu so as to not lag it
-                # Reset the variables to be read into
-                redPiece = []
-                redStatus = []
-                blackPiece = []
-                blackStatus = []
-                
-                
-                #-Coordinate Reading-
-                
-                # Read the red coordinates
-                coordinateGrouper = []
-                redCoordFile = open('last_game_info/redPieceCoordinates.txt', 'r')
-                while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
-                    theLine = redCoordFile.readline()
-                    theLine = theLine.strip('\n')
-                    if len(theLine) == 0: # If there is nothing on the currently red line, add the last read line and break
-                        redPiece.append(coordinateGrouper)
-                        break
-                    
-                    theLine = int(theLine) # Redefine as an int variable (so it can be used in the game)
-                    if len(coordinateGrouper) >= 2: # Check if the coordinate grouper does not include 2 variables, if so errase/reset it
-                        redPiece.append(coordinateGrouper) # Add the list to the redPiece list (should be a list of lists that comprise of two integers)
-                        coordinateGrouper = []
-                        
-                    coordinateGrouper.append(theLine) # Add the data to the coordinateGrouper list
-                redCoordFile.close()
-                
-                # Read the black coordinates
-                coordinateGrouper = []
-                blackCoordFile = open('last_game_info/blackPieceCoordinates.txt', 'r')
-                while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
-                    theLine = blackCoordFile.readline()
-                    theLine = theLine.strip('\n')
-                    if len(theLine) == 0: # If there is nothing on the currently red line, add the last read line and break
-                        blackPiece.append(coordinateGrouper)
-                        break
-                    
-                    theLine = int(theLine) # Redefine as an int variable (so it can be used in the game)
-                    if len(coordinateGrouper) >= 2: # Check if the coordinate grouper does not include 2 variables, if so errase/reset it
-                        blackPiece.append(coordinateGrouper) # Add the list to the redPiece list (should be a list of lists that comprise of two integers)
-                        coordinateGrouper = []
-                        
-                    coordinateGrouper.append(theLine) # Add the data to the coordinateGrouper list
-                blackCoordFile.close()
-                
-                
-                #-Status Reading-
-                
-                # Read the red status
-                redStatFile = open('last_game_info/redPieceStatus.txt', 'r')
-                while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
-                    theLine = redStatFile.readline()
-                    theLine = theLine.strip('\n')
-                    if len(theLine) == 0: #If there is nothing on the line, break
-                        break
-                    
-                    redStatus.append(theLine) # Add the line to the redStatus
-                redStatFile.close()
-                
-                # Read the black status
-                blackStatFile = open('last_game_info/blackPieceStatus.txt', 'r')
-                while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
-                    theLine = blackStatFile.readline()
-                    theLine = theLine.strip('\n')
-                    if len(theLine) == 0: #If there is nothing on the line, break
-                        break
-                    
-                    blackStatus.append(theLine) # Add the line to the blackStatus
-                blackStatFile.close()
-                
-                
-                #-Other File Reading-
-                
-                # Read the previous program state
-                prevStateFile = open('last_game_info/previousGameState.txt', 'r')
-                previousState = prevStateFile.readline()
-                prevStateFile.close()
-                
-                readingFiles = False # Stop this if statement from running over and over again in the menu (set the if-statement requirement to false)
-                
-                #------------------
+            #---Reading Files---
+            if readingFiles == True: # If statement that runs only once, declares variables to be set to the ones retunred in the readInfo function
+                blackPiece = readInfo()[0]
+                redPiece = readInfo()[1]
+                blackStatus = readInfo()[2]
+                redStatus = readInfo()[3]
+                previousState = readInfo()[4]
+                readingFiles = False # Stop this if statement from running over and over again in the menu to prevent lag
+            #-------------------
                 
             # Render Texts 
             renderedTitle = titleFont.render('Checkers!', 12, white)
@@ -554,139 +690,23 @@ def main():
                         if distFromPoints(board[blackPiece[i][1]][blackPiece[i][0]], mousePos) < pieceRadius: # If there is a collision between the mouse and a black piece
                             if blackStatus[i] == 'Alive': # Check if the piece is alive
                                 pieceChosen = True
-                                a = i # Temp variable to hold the index of the piece in the piece list
-                                blackColour[a] = yellow
+                                selectedIndex = i # Temp variable to hold the index of the piece in the piece list
+                                blackColour[selectedIndex] = yellow
             
             #----------------------------------------------------------------
             # Inputs & Movement:
             
             if pieceChosen == True: # If a piece has been selected
                 if ev.type == pygame.KEYDOWN:
-                    
-                    if blackPiece[a][1]-1 >= 0: #If the piece above is not overtop the screen
-                        
-                        #---------------Left Side---------------
-                        
-                        if ev.unicode == 'a' or ev.scancode == 80: # Check for input
-                            if blackPiece[a][0]-1 >= 0: # If the tile is not on the left edge
-                                canMove = True
-                                farSideBlocked = False
-                                enemyPieceInWay = False
-                                
-                                for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
-                                    if blackStatus[i] == 'Alive':
-                                        if blackPiece[i][0] == (blackPiece[a][0]-1) and blackPiece[i][1] == (blackPiece[a][1]-1): #Check for a black piece to the top left
-                                            canMove = False
-                                            pieceChosen = False
-                                        
-                                    if redStatus[i] == 'Alive':
-                                        if redPiece[i][0] == (blackPiece[a][0]-1) and redPiece[i][1] == (blackPiece[a][1]-1):#Check for a red piece to the top left
-                                            enemyPieceInWay = True
-                                            j = i #Temp record the index of the red piece (in the case it needs to be killed)
-                                            
-                                            for count in range(0, 8, 1): # Do this 8 times, number of pieces on each side
-                                                if redPiece[count][0] == (blackPiece[a][0]-2) and redPiece[count][1] == (blackPiece[a][1]-2) and redStatus[count] == 'Alive':
-                                                    farSideBlocked = True
-                                                if blackPiece[count][0] == (blackPiece[a][0]-2) and blackPiece[count][1] == (blackPiece[a][1]-2) and blackStatus[count] == 'Alive':
-                                                    farSideBlocked = True
-                                            
-                                            canMove = False
-                                            pieceChosen = False
-                                
-                                if farSideBlocked == False and enemyPieceInWay == True:
-                                    if (blackPiece[a][0]-2) >= 0 and (blackPiece[a][1]-2) >= 0: # If the tile two to the left, two up is on the board, jump and reset
-                                        blackPiece[a][1] -= 2
-                                        blackPiece[a][0] -= 2
-                                        redStatus[j] = 'Dead' # Kill the red piece
-                                        pieceChosen = False
-                                        blackColour[a] = black
-                                        programState = 'Player 2 Continue'
-                                        canMove = False
-                                    else: # The piece cannot jump, reset
-                                        pieceChosen = False
-                                        blackColour[a] = black
-                                        canMove = False
-                                        
-                                if canMove == True:
-                                    blackPiece[a][1] -= 1
-                                    blackPiece[a][0] -= 1
-                                    pieceChosen = False
-                                    blackColour[a] = black
-                                    programState = 'Player 2 Continue'
-                                        
-                                else:# Reset the piece chosen
-                                    pieceChosen = False
-                                    blackColour[a] = black
-                                    
-                            else:# Reset the piece chosen
-                                pieceChosen = False
-                                blackColour[a] = black
-                                            
-                        else: # Reset the piece chosen
-                            pieceChosen = False
-                            blackColour[a] = black
-                        
-                        #---------------Right Side--------------
-                        
-                        if ev.unicode == 'd' or ev.scancode == 79: # Check for input
-                            if blackPiece[a][0]+1 <= 7: # If the tile is not on the right edge
-                                canMove = True
-                                farSideBlocked = False
-                                enemyPieceInWay = False
-                                
-                                for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
-                                    if blackStatus[i] == 'Alive':
-                                        if blackPiece[i][0] == (blackPiece[a][0]+1) and blackPiece[i][1] == (blackPiece[a][1]-1): #Check for a black piece to the top right  
-                                            canMove = False
-                                            pieceChosen = False
-                                    
-                                    if redStatus[i] == 'Alive':
-                                        if redPiece[i][0] == (blackPiece[a][0]+1) and redPiece[i][1] == (blackPiece[a][1]-1):#Check for a red piece to the top right
-                                            enemyPieceInWay = True
-                                            j = i #Temp record the index of the red piece (in the case it needs to be killed)
-                                            
-                                            for count in range(0, 8, 1): # Do this 8 times, number of pieces on each side
-                                                if redPiece[count][0] == (blackPiece[a][0]+2) and redPiece[count][1] == (blackPiece[a][1]-2) and redStatus[count] == 'Alive':
-                                                    farSideBlocked = True
-                                                if blackPiece[count][0] == (blackPiece[a][0]+2) and blackPiece[count][1] == (blackPiece[a][1]-2) and blackStatus[count] == 'Alive':
-                                                    farSideBlocked = True
-                                                
-                                            canMove = False
-                                            pieceChosen = False
-                                        
-                                if farSideBlocked == False and enemyPieceInWay == True:
-                                    if (blackPiece[a][0]+2) <= 7 and (blackPiece[a][1]-2) >= 0: # If the tile two to the right, two up is on the board, jump and reset
-                                        blackPiece[a][1] -= 2
-                                        blackPiece[a][0] += 2
-                                        redStatus[j] = 'Dead' # Kill the red piece
-                                        blackColour[a] = black
-                                        programState = 'Player 2 Continue'
-                                        canMove = False
-                                    else: # The piece cannot jump, reset
-                                        pieceChosen = False
-                                        blackColour[a] = black
-                                        canMove = False
-                                        
-                                if canMove == True:
-                                    blackPiece[a][1] -= 1
-                                    blackPiece[a][0] += 1
-                                    pieceChosen = False
-                                    blackColour[a] = black
-                                    programState = 'Player 2 Continue'
-                                else: # Reset the piece chosen
-                                    pieceChosen = False
-                                    blackColour[a] = black
-                            else:# Reset the piece chosen
-                                pieceChosen = False
-                                blackColour[a] = black
-                        else: # Reset the piece chosen
-                            pieceChosen = False
-                            blackColour[a] = black
-                            
-                    else: # Reset the piece chosen
-                        pieceChosen = False
-                        blackColour[a] = black
-                
+                    if blackPiece[selectedIndex][1]-1 >= 0: #If the piece above is not overtop the screen/board
+                        if leftMove(-1, blackPiece, blackStatus, blackColour, black, redPiece, redStatus) == True: # if the leftMove function allows a black piece to move, change programState
+                            programState = 'Player 2 Continue'
+                        if rightMove(-1, blackPiece, blackStatus, blackColour, black, redPiece, redStatus) == True: # if the leftMove function allows a black piece to move, change programState
+                            programState = 'Player 2 Continue'
+                    else: # Reset the piece chosen (if the piece above is overtop the screen/board)
+                        blackColour[selectedIndex] = black
+                    pieceChosen = False
+                    canMove = False
             #----------------------------------------------------------------
             
             
@@ -761,8 +781,8 @@ def main():
                         if distFromPoints(board[redPiece[i][1]][redPiece[i][0]], mousePos) < pieceRadius: # If there is a collision between the mouse and a red piece
                             if redStatus[i] == 'Alive': # Check if the piece is alive
                                 pieceChosen = True
-                                a = i # Temp variable to hold the index of the piece in the piece list
-                                redColour[a] = yellow
+                                selectedIndex = i # Temp variable to hold the index of the piece in the piece list
+                                redColour[selectedIndex] = yellow
             
             #----------------------------------------------------------------
             # Inputs & Movement:
@@ -770,121 +790,16 @@ def main():
             if pieceChosen == True: # If a piece has been selected
                 if ev.type == pygame.KEYDOWN:
                     
-                    if redPiece[a][1] < 7: #If the piece is not at the bottom of the screen
-                        
-                        #---------------Left Side---------------
-                        
-                        if ev.unicode == 'a' or ev.scancode == 80: # Check for input
-                            if redPiece[a][0]-1 >= 0: # If the left tile exists/is on the board
-                                canMove = True
-                                farSideBlocked = False
-                                enemyPieceInWay = False
-                                
-                                for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
-                                    if redStatus[i] == 'Alive':
-                                        if redPiece[i][0] == (redPiece[a][0]-1) and redPiece[i][1] == (redPiece[a][1]+1): #Check for a red piece to the bottom left
-                                            canMove = False
-                                            pieceChosen = False
-                                    if blackStatus[i] == 'Alive':
-                                        if blackPiece[i][0] == (redPiece[a][0]-1) and blackPiece[i][1] == (redPiece[a][1]+1):#Check for a black piece to the bottom left
-                                            enemyPieceInWay = True
-                                            j = i #Temp record the index of the red piece (in the case it needs to be killed)
-                                        
-                                            for count in range(0, 8, 1): # Do this 8 times, number of pieces on each side
-                                                if blackPiece[count][0] == (redPiece[a][0]-2) and blackPiece[count][1] == (redPiece[a][1]+2) and blackStatus[count] == 'Alive': # Check for a red piece in the way of a left jump
-                                                    farSideBlocked = True
-                                                if redPiece[count][0] == (redPiece[a][0]-2) and redPiece[count][1] == (blackPiece[a][1]+2) and redStatus[count] == 'Alive': # Check for a red piece in the way of a left jump
-                                                    farSideBlocked = True
-                                            
-                                            canMove = False
-                                            pieceChosen = False
-                                            
-                                if farSideBlocked == False and enemyPieceInWay == True:
-                                    if (redPiece[a][0]-2) >= 0 and (redPiece[a][1]+2) <= 7: # If the tile two to the left, two up is on the board, jump and reset
-                                        redPiece[a][1] += 2
-                                        redPiece[a][0] -= 2
-                                        blackStatus[j] = 'Dead' # Kill the black piece
-                                        pieceChosen = False
-                                        redColour[a] = red
-                                        programState = 'Player 1 Continue'
-                                        canMove = False
-                                      
-                                if canMove == True:
-                                    redPiece[a][1] += 1
-                                    redPiece[a][0] -= 1
-                                    pieceChosen = False
-                                    redColour[a] = red
-                                    programState = 'Player 1 Continue'
-                                else: # Reset the piece chosen
-                                    pieceChosen = False
-                                    redColour[a] = red
-                            else: # Reset the piece chosen
-                                pieceChosen = False
-                                redColour[a] = red
-                            
-                        else: # Reset the piece chosen
-                            pieceChosen = False
-                            redColour[a] = red
-                        
-                        #---------------Right Side--------------
-                        
-                        if ev.unicode == 'd' or ev.scancode == 79: # Check for input
-                            if redPiece[a][0]+1 <= 7: # If the right tile exists/is on the board
-                                canMove = True
-                                farSideBlocked = False
-                                enemyPieceInWay = False
-                                
-                                for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
-                                    if redStatus[i] == 'Alive':
-                                        if redPiece[i][0] == (redPiece[a][0]+1) and redPiece[i][1] == (redPiece[a][1]+1): #Check for a piece to the bottom right
-                                            canMove = False
-                                            pieceChosen = False
-                                    if blackStatus[i] == 'Alive':
-                                        if blackPiece[i][0] == (redPiece[a][0]+1) and blackPiece[i][1] == (redPiece[a][1]+1):#Check for a red piece to the bottom right
-                                            enemyPieceInWay = True
-                                            j = i #Temp record the index of the red piece (in the case it needs to be killed)
-                                        
-                                            for count in range(0, 8, 1): # Do this 8 times, number of pieces on each side
-                                                if blackPiece[count][0] == (redPiece[a][0]+2) and blackPiece[count][1] == (redPiece[a][1]+2) and blackStatus[count] == 'Alive':
-                                                    farSideBlocked = True
-                                                if redPiece[count][0] == (redPiece[a][0]+2) and redPiece[count][1] == (redPiece[a][1]+2) and redStatus[count] == 'Alive':
-                                                    farSideBlocked = True
-                                            
-                                            canMove = False
-                                            pieceChosen = False
-                                        
-                                if farSideBlocked != True and enemyPieceInWay == True:
-                                    if (redPiece[a][0]+2) <= 7 and (redPiece[a][1]-2) <= 7: # If the tile two to the right, two up is on the board, jump and reset
-                                        redPiece[a][1] += 2
-                                        redPiece[a][0] += 2
-                                        blackStatus[j] = 'Dead' # Kill the black piece
-                                        pieceChosen = False
-                                        redColour[a] = red
-                                        programState = 'Player 1 Continue'
-                                        canMove = False
-                                        
-                                if canMove == True:
-                                    redPiece[a][1] += 1
-                                    redPiece[a][0] += 1
-                                    pieceChosen = False
-                                    redColour[a] = red
-                                    programState = 'Player 1 Continue'
-                                else: # Reset the piece chosen
-                                    pieceChosen = False
-                                    redColour[a] = red
-                                    
-                            else: # Reset the piece chosen
-                                pieceChosen = False
-                                redColour[a] = red
-                                
-                        else: # Reset the piece chosen
-                            pieceChosen = False
-                            redColour[a] = red
-                            
-                    else: # Reset the piece chosen
+                    if redPiece[selectedIndex][1] < 7: #If the piece is not at the bottom of the screen
+                        if pieceChosen == True: # If a piece has been selected
+                            if leftMove(1, redPiece, redStatus, redColour, red, blackPiece, blackStatus) == True: # if the leftMove function allows a red piece to move, change programState
+                                programState = 'Player 1 Continue'
+                            if rightMove(1, redPiece, redStatus, redColour, red, blackPiece, blackStatus) == True: # if the right Move function allows a red piece to move, change programState
+                                programState = 'Player 1 Continue'
+                        else: # Reset the piece chosen (if the piece above is overtop the screen/board)
+                            redColour[selectedIndex] = red
                         pieceChosen = False
-                        redColour[a] = red
-                
+                        canMove = False
                 
             
             #----------------------------------------------------------------
