@@ -4,7 +4,7 @@
 #
 # Author:      Gavin B.
 # Created:     04-May-2022
-# Updated:     16-May-2022
+# Updated:     28-May-2022
 #-----------------------------------------------------------------------------
 #I think this project deserves a level XXXXXX because ...
 #
@@ -43,7 +43,6 @@ def main():
     
     clock = pygame.time.Clock()  #Force frame rate to be slower
     
-    frameRate = 60
     frameCount = 0
     
     # Create surface of (width, height), and its window.
@@ -55,7 +54,6 @@ def main():
     # Various Game State Variables
     programState = 'Start Menu'
     previousState = ''
-    playerTurn = '1'
     
     #Colours:
     white = (255, 255, 255)
@@ -72,9 +70,6 @@ def main():
     tileWidth = 72
     tileHeight = 72
     tileShift = False
-    
-    #Continue Button Variables
-    contButtonRect = [160, 410, 400, 70]
     
     #Fonts and Text
     titleFont = pygame.font.SysFont("Times New Roman", 65)
@@ -98,19 +93,18 @@ def main():
     
     # Base Red Piece values
     redPiece = [ [0, 0,], [2, 0], [4, 0], [6, 0], [1, 1], [3, 1], [5, 1], [7, 1] ] # Red piece coordinates
-    redStatus = [ 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive'] # Red piece alive/dead list
-    redColour = [red, red, red, red, red, red, red, red] #Colours of the red pieces (For piece highlighting)
+    redStatus = ['Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive'] # Red piece alive/dead list
+    redKing = ['Notking', 'NotKing', 'NotKing', 'NotKing', 'NotKing', 'NotKing', 'NotKing', 'NotKing'] # Red piece king list
+    redColour = [red, red, red, red, red, red, red, red] # Colours of the red pieces (For piece highlighting)
     
-    # Base Black Piece values (for reference, variables will get reset in file reading)
+    # Base Black Piece values
     blackPiece = [ [0, 6], [2, 6], [4, 6], [6, 6], [1, 7], [3, 7], [5, 7], [7, 7] ] # Black piece coordinates
-    blackStatus = [ 'dead', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive'] # Black piece alive/dead list
-    blackColour = [black, black, black, black, black, black, black, black] #Colours of the black pieces (for piece highlighting)
+    blackStatus = ['Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive'] # Black piece alive/dead list
+    blackKing = ['Notking', 'NotKing', 'NotKing', 'NotKing', 'NotKing', 'NotKing', 'NotKing', 'NotKing'] # Black piece king list
+    blackColour = [black, black, black, black, black, black, black, black] # Colours of the black pieces (For piece highlighting)
     
     pieceRadius = 30 # Radius of the pieces
     pieceChosen = False # Statement on if a piece has been chosen or not
-    canMove = True # Statement on if a piece has been allowed to move upon an input
-    farSideBlocked = False # Statement regarding if a piece (enemy or teamate piece) is in the way of jumping
-    enemyPieceInWay = False # Statement of wheter or not an enemy piece is in the way
     
     # Other Variables
     
@@ -124,13 +118,11 @@ def main():
     
     #--------------------Functions--------------------
     
-    def leftMove(upDown, teamPiece, teamStatus, teamColour, preferedColour, enemyPiece, enemyStatus):
+    #---------------Left Side Movement---------------
+    def leftMove(upDown, teamPiece, teamStatus, enemyPiece, enemyStatus, inputMethod):
         '''
         '''
-                        
-        #---------------Left Side---------------
-            
-        if ev.unicode == 'a' or ev.scancode == 80: # Check for input
+        if ev.unicode == inputMethod: # Check for input
             if teamPiece[selectedIndex][0]-1 >= 0: # If the tile is not on the left edge
                 canMove = True
                 farSideBlocked = False
@@ -140,7 +132,6 @@ def main():
                     if teamStatus[i] == 'Alive':
                         if teamPiece[i][0] == (teamPiece[selectedIndex][0]-1) and teamPiece[i][1] == (teamPiece[selectedIndex][1]+upDown): #Check for a black piece to the top left
                             canMove = False
-                            pieceChosen = False
                         
                     if enemyStatus[i] == 'Alive':
                         if enemyPiece[i][0] == (teamPiece[selectedIndex][0]-1) and enemyPiece[i][1] == (teamPiece[selectedIndex][1]+upDown):#Check for a red piece to the top left
@@ -148,113 +139,93 @@ def main():
                             enemyIndex = i #Temp record the index of the enemy piece (in the case it needs to be killed)
                             
                             for count in range(0, 8, 1): # Do this 8 times, number of pieces on each side - check if there is any team's piece in the way of a jump and is alive
-                                if enemyPiece[count][0] == (teamPiece[selectedIndex][0]-2) and enemyPiece[count][1] == (teamPiece[selectedIndex][1]-2) and enemyStatus[count] == 'Alive':
+                                if enemyPiece[count][0] == (teamPiece[selectedIndex][0]-2) and enemyPiece[count][1] == (teamPiece[selectedIndex][1]+(2*upDown)) and enemyStatus[count] == 'Alive':
                                     farSideBlocked = True
-                                if teamPiece[count][0] == (teamPiece[selectedIndex][0]-2) and teamPiece[count][1] == (teamPiece[selectedIndex][1]-2) and teamStatus[count] == 'Alive':
+                                if teamPiece[count][0] == (teamPiece[selectedIndex][0]-2) and teamPiece[count][1] == (teamPiece[selectedIndex][1]+(2*upDown)) and teamStatus[count] == 'Alive':
                                     farSideBlocked = True
                             
                             canMove = False
-                            pieceChosen = False
                 
-                if farSideBlocked == False and enemyPieceInWay == True:
-                    if (teamPiece[selectedIndex][0]-2) >= 0 and (teamPiece[selectedIndex][1]+(2*upDown)) >= 0: # If the tile two to the left, two up is on the board, jump and reset
-                        teamPiece[selectedIndex][1] += (2*upDown)
-                        teamPiece[selectedIndex][0] -= 2
-                        enemyStatus[enemyIndex] = 'Dead' # Kill the red piece
-                        pieceChosen = False
-                        teamColour[selectedIndex] = preferedColour
-                        canMove = False
-                        return True
-                    else: # The piece cannot jump, reset
-                        pieceChosen = False
-                        teamColour[selectedIndex] = preferedColour
-                        canMove = False
-                        return False
-                        
-                if canMove == True:
+                if farSideBlocked == False and enemyPieceInWay == True: # If the jump is not blocked and an enemy is in the way
+                    if (teamPiece[selectedIndex][0]+2) >= 0:
+                        if (teamPiece[selectedIndex][1]+(2*upDown)) != 8:
+                                teamPiece[selectedIndex][1] += 2*upDown
+                                teamPiece[selectedIndex][0] -= 2
+                                enemyStatus[enemyIndex] = 'Dead' # Kill the enemy piece
+                                return True
+                        else: # The piece cannot jump, reset
+                            return False 
+                        if (teamPiece[selectedIndex][1]+(2*upDown)) !=-1:
+                            teamPiece[selectedIndex][1] += 2*upDown
+                            teamPiece[selectedIndex][0] -= 2
+                            enemyStatus[enemyIndex] = 'Dead' # Kill the enemy piece
+                            return True
+                        else: # The piece cannot jump, reset
+                            return False 
+                if canMove == True: # If the piece can move (and has not jumped), move one space
                     teamPiece[selectedIndex][1] += upDown
                     teamPiece[selectedIndex][0] -= 1
-                    pieceChosen = False
-                    teamColour[selectedIndex] = preferedColour
-                    return True
-                        
-                else:# Reset the piece chosen
-                    pieceChosen = False
-                    teamColour[selectedIndex] = preferedColour
+                    return True 
+                else:
                     return False
-                    
-            else:# Reset the piece chosen
-                pieceChosen = False
-                teamColour[selectedIndex] = preferedColour
-                return False
-                            
-        else: # Reset the piece chosen
-            pieceChosen = False
-            teamColour[selectedIndex] = preferedColour
+            else:
+                return False            
+        else:
             return False
-            
-    def rightMove(upDown, teamPiece, teamStatus, teamColour, preferedColour, enemyPiece, enemyStatus):
+           
+    #---------------Right Side Movement--------------
+    def rightMove(upDown, teamPiece, teamStatus, enemyPiece, enemyStatus, inputMethod):
         '''
-        '''
-        
-        #---------------Right Side--------------
-                        
-        if ev.unicode == 'd' or ev.scancode == 79: # Check for input
+        '''             
+        if ev.unicode == inputMethod: # Check for input
             if teamPiece[selectedIndex][0]+1 <= 7: # If the tile is not on the right edge
                 canMove = True
                 farSideBlocked = False
                 enemyPieceInWay = False
                 
                 for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
-                    if blackStatus[i] == 'Alive':
+                    if teamStatus[i] == 'Alive':
                         if teamPiece[i][0] == (teamPiece[selectedIndex][0]+1) and teamPiece[i][1] == (teamPiece[selectedIndex][1]+upDown): #Check for a team piece to the top right  
                             canMove = False
-                            pieceChosen = False
                     
                     if enemyStatus[i] == 'Alive':
                         if enemyPiece[i][0] == (teamPiece[selectedIndex][0]+1) and enemyPiece[i][1] == (teamPiece[selectedIndex][1]+upDown):#Check for a enemy piece to the top right
                             enemyPieceInWay = True
                             enemyIndex = i #Temp record the index of the enemy piece (in the case it needs to be killed)
                             
-                            for count in range(0, 8, 1): # Do this 8 times, number of pieces on each side
+                            for count in range(0, 8, 1): # Do this 8 times, number of pieces on each side - check if there is any team's piece in the way of a jump and is alive
                                 if enemyPiece[count][0] == (teamPiece[selectedIndex][0]+2) and enemyPiece[count][1] == (teamPiece[selectedIndex][1]+(2*upDown)) and enemyStatus[count] == 'Alive':
                                     farSideBlocked = True
                                 if teamPiece[count][0] == (teamPiece[selectedIndex][0]+2) and teamPiece[count][1] == (teamPiece[selectedIndex][1]+(2*upDown)) and teamStatus[count] == 'Alive':
                                     farSideBlocked = True
                                 
                             canMove = False
-                            pieceChosen = False
                         
                 if farSideBlocked == False and enemyPieceInWay == True:
-                    if (teamPiece[selectedIndex][0]+2) <= 7 and (teamPiece[selectedIndex][1]+(2*upDown)) >= 0: # If the tile two to the right, two up is on the board, jump and reset
-                        teamPiece[selectedIndex][1] += 2*upDown
-                        teamPiece[selectedIndex][0] += 2
-                        enemyStatus[enemyIndex] = 'Dead' # Kill the red piece
-                        teamColour[selectedIndex] = preferedColour
-                        return True
-                        canMove = False
-                    else: # The piece cannot jump, reset
-                        pieceChosen = False
-                        teamColour[selectedIndex] = preferedColour
-                        canMove = False
-                        
-                if canMove == True:
+                    if (teamPiece[selectedIndex][0]+2) <= 7:
+                        if (teamPiece[selectedIndex][1]+(2*upDown)) != 8:
+                            teamPiece[selectedIndex][1] += 2*upDown
+                            teamPiece[selectedIndex][0] += 2
+                            enemyStatus[enemyIndex] = 'Dead' # Kill the enemy piece
+                            return True
+                        else: # The piece cannot jump, reset
+                            return False 
+                        if (teamPiece[selectedIndex][1]+(2*upDown)) !=-1:
+                            teamPiece[selectedIndex][1] += 2*upDown
+                            teamPiece[selectedIndex][0] += 2
+                            enemyStatus[enemyIndex] = 'Dead' # Kill the enemy piece
+                            return True
+                        else: # The piece cannot jump, reset
+                            return False 
+                if canMove == True: # If the piece can move (and has not jumped), move one space
                     teamPiece[selectedIndex][1] += upDown
                     teamPiece[selectedIndex][0] += 1
-                    pieceChosen = False
-                    teamColour[selectedIndex] = preferedColour
                     return True
-                else: # Reset the piece chosen
-                    pieceChosen = False
-                    teamColour[selectedIndex] = preferedColour
+                else:
                     return False
-            else:# Reset the piece chosen
-                pieceChosen = False
-                teamColour[selectedIndex] = preferedColour
+            else:
                 return False
-        else: # Reset the piece chosen
-            pieceChosen = False
-            teamColour[selectedIndex] = preferedColour
+        else:
             return False
     
     def deadCheck():
@@ -276,9 +247,20 @@ def main():
         '''
         if blackStatus == ['Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead']:
             return 'Player 1 is dead'
-        if redStatus == ['Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead']:
+        elif redStatus == ['Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead']:
             return 'Player 2 is dead'
+        return None
     
+    def kingCheck():
+        '''
+        '''
+        
+        for i in range(0, 8, 1):
+            if blackPiece[i][1] <= 0:
+                blackKing[i] = 'King'
+            if redPiece[i][1] >= 7:
+                redKing[i] = 'King'
+        
     def readInfo():
         '''
         '''
@@ -433,7 +415,7 @@ def main():
             Takes the inPnt parameter, if it is within the boundaries of the button
             class's variables, checks if there is a mouse input as well as if it was
             the left click on the mouse. Then returns True if so (pressing button),
-            else return False (not pressing button)
+            else return False (not pressing button).
 
 
             Parameters
@@ -450,7 +432,7 @@ def main():
                 if ev.type == pygame.MOUSEBUTTONDOWN: #Is there a mouse event?
                     if ev.button == 1: # If the left mouse is clicked, return true
                         return True
-            else: return False
+            return None
             
     
     class tile(): #Class object for tiles and buttons
@@ -483,13 +465,8 @@ def main():
     helpButton = button(yellow, [230, 525, 260, 50])
     exitButton = button(red, [290, 600, 140, 30])
     helpExit = button(red, [580, 650, 120, 40])
-    
     pauseContinue = button(goldBrown, [160, 350, 400, 50])
     pauseMainMenu = button(red, [160, 425, 400, 50])
-    
-    playerOneContinue = button(green, contButtonRect)
-    playerTwoContinue = button(green, contButtonRect)
-    
     endBackButton = button(red, [180, 440, 360, 60])
     
     #--Tiles--
@@ -537,11 +514,11 @@ def main():
             #-------------------
                 
             # Render Texts 
-            renderedTitle = titleFont.render('Checkers!', 12, white)
-            renderedContinueGame = buttonFont.render('Continue Previous Game', 12, black)
-            renderedNew = buttonFont.render('New Game', 12, black)
-            renderedHelp = buttonFont.render('Help & Instructions', 12, black)
-            renderedExit = buttonFont.render('Exit', 12, black)
+            renderedTitle = titleFont.render('Checkers!', True, white)
+            renderedContinueGame = buttonFont.render('Continue Previous Game', True, black)
+            renderedNew = buttonFont.render('New Game', True, black)
+            renderedHelp = buttonFont.render('Help & Instructions', True, black)
+            renderedExit = buttonFont.render('Exit', True, black)
             
             if continueGameButton.buttonCollidePoint(mousePos) == True: # Check if the continue game button has been pressed (will start with the newly read variables)
                 programState = previousState
@@ -549,11 +526,13 @@ def main():
             elif newGameButton.buttonCollidePoint(mousePos) == True: # Check if the new game button has been pressed (will reset the newly read variables)
                 redPiece = [ [0, 0,], [2, 0], [4, 0], [6, 0], [1, 1], [3, 1], [5, 1], [7, 1] ]
                 redStatus = [ 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive']
+                redKing = ['Notking', 'NotKing', 'NotKing', 'NotKing', 'NotKing', 'NotKing', 'NotKing', 'NotKing']
                 redColour = [red, red, red, red, red, red, red, red]
                 blackPiece = [ [0, 6], [2, 6], [4, 6], [6, 6], [1, 7], [3, 7], [5, 7], [7, 7] ]
                 blackStatus = [ 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive']
+                blackKing = ['Notking', 'NotKing', 'NotKing', 'NotKing', 'NotKing', 'NotKing', 'NotKing', 'NotKing']
                 blackColour = [black, black, black, black, black, black, black, black]
-                programState = 'Player 1 Continue'
+                programState = 'Player 1 Turn'
                 
             elif helpButton.buttonCollidePoint(mousePos) == True: # Check if the help button has been pressed, if so go to the help menu
                 programState = 'Help Menu'
@@ -583,8 +562,8 @@ def main():
             # Update your game objects and data structures here...
             
             # Render texts
-            renderedHelpTitle = titleFont.render('Help & How to Play', 12, yellow)
-            renderedBack = buttonFont.render('Back', 12, black)
+            renderedHelpTitle = titleFont.render('Help & How to Play', True, yellow)
+            renderedBack = buttonFont.render('Back', True, black)
             
             if helpExit.buttonCollidePoint(mousePos) == True:
                 programState = 'Start Menu'
@@ -607,9 +586,9 @@ def main():
             # Update your game objects and data structures here...
             
             # Render texts
-            renderedPauseTitle = titleFont.render('Paused', 12, white)
-            renderedResume = buttonFont.render('Resume Current Game', 12, black)
-            renderedSaveQuit = buttonFont.render('Save & Quit to Menu', 12, black)
+            renderedPauseTitle = titleFont.render('Paused', True, white)
+            renderedResume = buttonFont.render('Resume Current Game', True, black)
+            renderedSaveQuit = buttonFont.render('Save & Quit to Menu', True, black)
             
             if pauseContinue.buttonCollidePoint(mousePos) == True: # Check if the contine game button has been pressed, if so return to the previous programState
                 programState = previousState
@@ -635,49 +614,20 @@ def main():
             mainSurface.blit(renderedResume, (250, 360))
             mainSurface.blit(renderedSaveQuit, (250, 435))
             
-        elif programState == 'Player 1 Continue':
-            # Update your game objects and data structures here...
-            
-            if deadCheck() == 'Player 1 is dead':
-                programState = 'End Screen'
-                gameWinner = '2'
-            elif deadCheck() == 'Player 2 is dead':
-                programState = 'End Screen'
-                gameWinner = '1'
-            
-            
-            if ev.type == pygame.KEYUP:
-                previousState = programState
-                if ev.scancode == 41:
-                    programState = 'Pause Menu'
-            
-            playerTurn = '1'
-            renderedTurnContinue = buttonFont.render('Take Turn!', 12, black)
-            renderedTurnDeclare = titleFont.render(f"Player {playerTurn}'s Turn", 12, white)
-            
-            if playerOneContinue.buttonCollidePoint(mousePos):
-                pieceChosen = False
-                programState = 'Player 1 Turn'
-            
-            #-----Drawing-----
-            # So first fill everything with the background color
-            mainSurface.fill((0, 0, 0))
-            
-            pygame.draw.rect(mainSurface, white, (72, 72, tileWidth*8, tileHeight*8))# Draw the white "tiles" (Background square)
-            
-            for i in range(0, len(tiles), 1): # Draw grey tiles
-                tiles[i].drawTile(mainSurface)
-            
-            playerOneContinue.draw(mainSurface)
-            pygame.draw.rect(mainSurface, black, (140, 120, 440, 80))
-            mainSurface.blit(renderedTurnDeclare, (160, 120))
-            mainSurface.blit(renderedTurnContinue, (300, 430))
-            
             
         elif programState == 'Player 1 Turn':
             # Update your game objects and data structures here...
             
-            renderedTurnShow = buttonFont.render("Player 1's Turn", 12, white)
+            kingCheck()
+            
+            if deadCheck() == 'Player 1 is dead': # Check if player 1's pieces are dead, end game if so
+                programState = 'End Screen'
+                gameWinner = '2'
+            elif deadCheck() == 'Player 2 is dead': # Check if player 2's pieces are dead, end game if so
+                programState = 'End Screen'
+                gameWinner = '1'
+            
+            renderedTurnShow = buttonFont.render("Player 1's Turn", True, white)
             
             if ev.type == pygame.KEYUP:
                 previousState = programState
@@ -698,15 +648,26 @@ def main():
             
             if pieceChosen == True: # If a piece has been selected
                 if ev.type == pygame.KEYDOWN:
-                    if blackPiece[selectedIndex][1]-1 >= 0: #If the piece above is not overtop the screen/board
-                        if leftMove(-1, blackPiece, blackStatus, blackColour, black, redPiece, redStatus) == True: # if the leftMove function allows a black piece to move, change programState
-                            programState = 'Player 2 Continue'
-                        if rightMove(-1, blackPiece, blackStatus, blackColour, black, redPiece, redStatus) == True: # if the leftMove function allows a black piece to move, change programState
-                            programState = 'Player 2 Continue'
-                    else: # Reset the piece chosen (if the piece above is overtop the screen/board)
+                    if blackPiece[selectedIndex][1] > 0: # If the piece is not at the top of the screen
+                        if leftMove(-1, blackPiece, blackStatus, redPiece, redStatus, 'q') == True: # If the leftMove function allows a black piece to move, change programState
+                            programState = 'Player 2 Turn'
+                        if rightMove(-1, blackPiece, blackStatus, redPiece, redStatus, 'e') == True: # If the rightMove function allows a black piece to move, change programState
+                            programState = 'Player 2 Turn'
+                            
                         blackColour[selectedIndex] = black
-                    pieceChosen = False
-                    canMove = False
+                        pieceChosen = False
+                            
+                    if blackPiece[selectedIndex][1] < 7: #If the piece is not at the bottom of the screen
+                        if blackKing[selectedIndex] == 'King':
+                            if leftMove(1, blackPiece, blackStatus, redPiece, redStatus, 'a') == True:
+                                programState = 'Player 2 Turn'
+                            if rightMove(1, blackPiece, blackStatus, redPiece, redStatus, 'd') == True:
+                                programState = 'Player 2 Turn'
+                        
+                            blackColour[selectedIndex] = black
+                            pieceChosen = False
+                        
+                        
             #----------------------------------------------------------------
             
             
@@ -719,56 +680,31 @@ def main():
             
             for i in range(0, len(tiles), 1): # Draw grey tiles
                 tiles[i].drawTile(mainSurface)
-            for i in range(0, len(redPiece), 1): # Draw red pieces
+            for i in range(0, 8, 1): # Draw red pieces
                 if redStatus[i] == 'Alive': # Check if the piece is alive
                     pygame.draw.circle(mainSurface, redColour[i], board[redPiece[i][1]][redPiece[i][0]], pieceRadius)
-            for i in range(0, len(blackPiece), 1): # Draw black pieces
+                    if redKing[i] == 'King': # Draw king details if piece has 'King' characteristic
+                        pygame.draw.rect(mainSurface, yellow, ( board[redPiece[i][1]][redPiece[i][0]][0]-10, board[redPiece[i][1]][redPiece[i][0]][1]-5, 20, 10))
+            for i in range(0, 8, 1): # Draw black pieces
                 if blackStatus[i] == 'Alive': # Check if the piece is alive
                     pygame.draw.circle(mainSurface, blackColour[i], board[blackPiece[i][1]][blackPiece[i][0]], pieceRadius)
+                    if blackKing[i] == 'King': # Draw king details if piece has 'King' characteristic
+                        pygame.draw.rect(mainSurface, yellow, ( board[blackPiece[i][1]][blackPiece[i][0]][0]-10, board[blackPiece[i][1]][blackPiece[i][0]][1]-5, 20, 10))
         
-        
-        elif programState == 'Player 2 Continue':
-            # Update your game objects and data structures here...
-            
-            if deadCheck() == 'Player 1 is dead':
-                programState = 'End Screen'
-                gameWinner = '2'
-            elif deadCheck() == 'Player 2 is dead':
-                programState = 'End Screen'
-                gameWinner = '1'
-            
-            if ev.type == pygame.KEYUP:
-                previousState = programState
-                if ev.scancode == 41:
-                    programState = 'Pause Menu'
-            
-            playerTurn = '2'
-            renderedTurnContinue = buttonFont.render('Take Turn!', 12, black)
-            renderedTurnDeclare = titleFont.render(f"Player {playerTurn}'s Turn", 12, red)
-            
-            if playerTwoContinue.buttonCollidePoint(mousePos):
-                pieceChosen = False
-                programState = 'Player 2 Turn'
-            
-            
-            #-----Drawing-----
-            # So first fill everything with the background color
-            mainSurface.fill((0, 0, 0))
-            
-            pygame.draw.rect(mainSurface, white, (72, 72, tileWidth*8, tileHeight*8))# Draw the white "tiles" (Background square)
-            
-            for i in range(0, len(tiles), 1): # Draw grey tiles
-                tiles[i].drawTile(mainSurface)
-            
-            playerTwoContinue.draw(mainSurface)
-            pygame.draw.rect(mainSurface, black, (140, 120, 440, 80))
-            mainSurface.blit(renderedTurnDeclare, (160, 120))
-            mainSurface.blit(renderedTurnContinue, (300, 430))
         
         elif programState == 'Player 2 Turn':
             # Update your game objects and data structures here...
             
-            renderedTurnShow = buttonFont.render("Player 2's Turn", 12, red)
+            kingCheck()
+            
+            if deadCheck() == 'Player 1 is dead': # Check if player 1's pieces are dead, end game if so
+                programState = 'End Screen'
+                gameWinner = '2'
+            elif deadCheck() == 'Player 2 is dead': # Check if player 2's pieces are dead, end game if so
+                programState = 'End Screen'
+                gameWinner = '1'
+            
+            renderedTurnShow = buttonFont.render("Player 2's Turn", True, red)
             
             if ev.type == pygame.KEYUP:
                 previousState = programState
@@ -789,17 +725,24 @@ def main():
             
             if pieceChosen == True: # If a piece has been selected
                 if ev.type == pygame.KEYDOWN:
-                    
                     if redPiece[selectedIndex][1] < 7: #If the piece is not at the bottom of the screen
-                        if pieceChosen == True: # If a piece has been selected
-                            if leftMove(1, redPiece, redStatus, redColour, red, blackPiece, blackStatus) == True: # if the leftMove function allows a red piece to move, change programState
-                                programState = 'Player 1 Continue'
-                            if rightMove(1, redPiece, redStatus, redColour, red, blackPiece, blackStatus) == True: # if the right Move function allows a red piece to move, change programState
-                                programState = 'Player 1 Continue'
-                        else: # Reset the piece chosen (if the piece above is overtop the screen/board)
-                            redColour[selectedIndex] = red
+                        if leftMove(1, redPiece, redStatus, blackPiece, blackStatus, 'a') == True: # If the leftMove function allows a red piece to move, change programState
+                            programState = 'Player 1 Turn'
+                        if rightMove(1, redPiece, redStatus, blackPiece, blackStatus, 'd') == True: # If the right Move function allows a red piece to move, change programState
+                            programState = 'Player 1 Turn'
+                            
+                        redColour[selectedIndex] = red
                         pieceChosen = False
-                        canMove = False
+                    
+                    if redPiece[selectedIndex][1] > 0: #If the piece is not at the top of the screen
+                        if redKing[selectedIndex] == 'King':
+                            if leftMove(-1, redPiece, redStatus, blackPiece, blackStatus, 'q') == True:
+                                programState = 'Player 1 Turn'
+                            if rightMove(-1, redPiece, redStatus, blackPiece, blackStatus, 'e') == True:
+                                programState = 'Player 1 Turn'
+                        
+                            redColour[selectedIndex] = red
+                            pieceChosen = False
                 
             
             #----------------------------------------------------------------
@@ -813,12 +756,16 @@ def main():
             
             for i in range(0, len(tiles), 1): # Draw grey tiles
                 tiles[i].drawTile(mainSurface)
-            for i in range(0, len(redPiece), 1): # Draw red pieces
+            for i in range(0, 8, 1): # Draw red pieces
                 if redStatus[i] == 'Alive': # Check if the piece is alive
                     pygame.draw.circle(mainSurface, redColour[i], board[redPiece[i][1]][redPiece[i][0]], pieceRadius)
+                    if redKing[i] == 'King': # Draw king details if piece has 'King' characteristic
+                        pygame.draw.rect(mainSurface, yellow, ( board[redPiece[i][1]][redPiece[i][0]][0]-10, board[redPiece[i][1]][redPiece[i][0]][1]-5, 20, 10))
             for i in range(0, len(blackPiece), 1): # Draw black pieces
                 if blackStatus[i] == 'Alive': # Check if the piece is alive
                     pygame.draw.circle(mainSurface, blackColour[i], board[blackPiece[i][1]][blackPiece[i][0]], pieceRadius)
+                    if blackKing[i] == 'King': # Draw king details if piece has 'King' characteristic
+                        pygame.draw.rect(mainSurface, yellow, ( board[blackPiece[i][1]][blackPiece[i][0]][0]-10, board[blackPiece[i][1]][blackPiece[i][0]][1]-5, 20, 10))
             
             
         elif programState == 'End Screen':
@@ -833,8 +780,8 @@ def main():
             writeInfo() # Write the game info using the writeInfo function
             
             # Text rendering
-            renderedWin = titleFont.render(f'Player {gameWinner}Wins!', 12, white)
-            renderedEndBack = buttonFont.render('Back to Menu', 12, black)
+            renderedWin = titleFont.render(f'Player {gameWinner} Wins!', True, white)
+            renderedEndBack = buttonFont.render('Back to Menu', True, black)
             
             if endBackButton.buttonCollidePoint(mousePos) == True: # Check if the back to menu button has been pressed
                 programState = 'Start Menu'
