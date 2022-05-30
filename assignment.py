@@ -4,7 +4,7 @@
 #
 # Author:      Gavin B.
 # Created:     04-May-2022
-# Updated:     28-May-2022
+# Updated:     29-May-2022
 #-----------------------------------------------------------------------------
 #I think this project deserves a level XXXXXX because ...
 #
@@ -149,13 +149,6 @@ def main():
                 if farSideBlocked == False and enemyPieceInWay == True: # If the jump is not blocked and an enemy is in the way
                     if (teamPiece[selectedIndex][0]+2) >= 0:
                         if (teamPiece[selectedIndex][1]+(2*upDown)) != 8:
-                                teamPiece[selectedIndex][1] += 2*upDown
-                                teamPiece[selectedIndex][0] -= 2
-                                enemyStatus[enemyIndex] = 'Dead' # Kill the enemy piece
-                                return True
-                        else: # The piece cannot jump, reset
-                            return False 
-                        if (teamPiece[selectedIndex][1]+(2*upDown)) !=-1:
                             teamPiece[selectedIndex][1] += 2*upDown
                             teamPiece[selectedIndex][0] -= 2
                             enemyStatus[enemyIndex] = 'Dead' # Kill the enemy piece
@@ -204,13 +197,6 @@ def main():
                 if farSideBlocked == False and enemyPieceInWay == True:
                     if (teamPiece[selectedIndex][0]+2) <= 7:
                         if (teamPiece[selectedIndex][1]+(2*upDown)) != 8:
-                            teamPiece[selectedIndex][1] += 2*upDown
-                            teamPiece[selectedIndex][0] += 2
-                            enemyStatus[enemyIndex] = 'Dead' # Kill the enemy piece
-                            return True
-                        else: # The piece cannot jump, reset
-                            return False 
-                        if (teamPiece[selectedIndex][1]+(2*upDown)) !=-1:
                             teamPiece[selectedIndex][1] += 2*upDown
                             teamPiece[selectedIndex][0] += 2
                             enemyStatus[enemyIndex] = 'Dead' # Kill the enemy piece
