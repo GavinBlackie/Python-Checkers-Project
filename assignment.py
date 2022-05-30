@@ -4,7 +4,7 @@
 #
 # Author:      Gavin B.
 # Created:     04-May-2022
-# Updated:     29-May-2022
+# Updated:     30-May-2022
 #-----------------------------------------------------------------------------
 #I think this project deserves a level XXXXXX because ...
 #
@@ -121,6 +121,37 @@ def main():
     #---------------Left Side Movement---------------
     def leftMove(upDown, teamPiece, teamStatus, enemyPiece, enemyStatus, inputMethod):
         '''
+        Checks all the conditions for a piece to move left or jump left, jumps or moves left if conditions fullfilled.
+        
+        Function that takes in a bunch of values specific to the conditions of a left movement in a checker game. First,
+        it takes the inputMethod and checks if the player inputed the same method, then it checks if the place they are
+        trying to move exists, otherwise do nothing. Then it goes through all piece indexes that are "Alive" and checks
+        if they are in the way or not, then it checks it a piece is in a jumping range. If the piece that was beside the
+        desired left movement was an enemy, it jumps, otherwise nothing happens. In the case that another team piece was
+        in the way of jumping it will not jump. It will only allow a jump left if there is no alive piece on any team in
+        the way and that the piece in the way is on the opposing team. Additionally a regular movement when there is no
+        alive piece in the way will also pass through the code and ignore the jumping aspect.
+        
+        Parameters
+        ----------
+        upDown : int
+            directional variable, ment to only be a 1 or a -1 to determine which way the piece wants to move vertically
+        teamPiece : int
+            list of 8 pair ints of the x and y indexes, on the board, for pieces on the team that is trying to move
+        teamStatus : str
+            list of 8 strings that represent the dead/alive status of the pieces whose are on the team whom is trying to move a piece
+        enemyPiece : int
+            list of 8 pair ints of the x and y indexes, on the board, for pieces on the opposing team
+        enemyStatus : str
+            list of 8 strings that represent the dead/alive status of the enemy teams pieces
+        inputMethod : str
+            the string/unicode variable to be checked by the function
+            
+        Returns
+        -------
+        boolean
+            true/false statement on whether the function allowed the piece to move.
+        
         '''
         if ev.unicode == inputMethod: # Check for input
             if teamPiece[selectedIndex][0]-1 >= 0: # If the tile is not on the left edge
@@ -169,6 +200,38 @@ def main():
     #---------------Right Side Movement--------------
     def rightMove(upDown, teamPiece, teamStatus, enemyPiece, enemyStatus, inputMethod):
         '''
+        
+        Checks all the conditions for a piece to move right or jump right, jumps or moves right if conditions fullfilled.
+        
+        Function that takes in a bunch of values specific to the conditions of a right movement in a checker game. First,
+        it takes the inputMethod and checks if the player inputed the same method, then it checks if the place they are
+        trying to move exists, otherwise do nothing. Then it goes through all piece indexes that are "Alive" and checks
+        if they are in the way or not, then it checks it a piece is in a jumping range. If the piece that was beside the
+        desired right movement was an enemy, it jumps, otherwise nothing happens. In the case that another team piece was
+        in the way of jumping it will not jump. It will only allow a jump right if there is no alive piece on any team in
+        the way and that the piece in the way is on the opposing team. Additionally a regular movement when there is no
+        alive piece in the way will also pass through the code and ignore the jumping aspect.
+        
+        Parameters
+        ----------
+        upDown : int
+            directional variable, ment to only be a 1 or a -1 to determine which way the piece wants to move vertically
+        teamPiece : int
+            list of 8 pair ints of the x and y indexes, on the board, for pieces on the team that is trying to move
+        teamStatus : str
+            list of 8 strings that represent the dead/alive status of the pieces whose are on the team whom is trying to move a piece
+        enemyPiece : int
+            list of 8 pair ints of the x and y indexes, on the board, for pieces on the opposing team
+        enemyStatus : str
+            list of 8 strings that represent the dead/alive status of the enemy teams pieces
+        inputMethod : str
+            the string/unicode variable to be checked by the function
+            
+        Returns
+        -------
+        boolean
+            true/false statement on whether the function allowed the piece to move.
+        
         '''             
         if ev.unicode == inputMethod: # Check for input
             if teamPiece[selectedIndex][0]+1 <= 7: # If the tile is not on the right edge
@@ -226,10 +289,11 @@ def main():
         ----------
         None
         
+        
         Returns
         -------
         str
-            Statement on which player's pieces are dead
+            statement on which player's pieces are dead
         '''
         if blackStatus == ['Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead', 'Dead']:
             return 'Player 1 is dead'
@@ -239,6 +303,19 @@ def main():
     
     def kingCheck():
         '''
+        Basic function that detects if a black or red piece is at the end of the screen,
+        if so it changes their king variable to 'King' to identify they are now a king
+        piece for the movement code to use.
+        
+        Parameters
+        ----------
+        None
+        
+        
+        Returns
+        -------
+        None
+        
         '''
         
         for i in range(0, 8, 1):
@@ -249,13 +326,35 @@ def main():
         
     def readInfo():
         '''
+        Reads the existing files and replaces the respective variables with the ones
+        written in the files.
+        
+        Function that resets the variables that are going to be replaced. Then reads them
+        in the right format. Most use a variable called "coordinateGrouper" to help format
+        the data in the right way as redPiece and blackPiece require lists inside of lists.
+        The "coordinateGrouper" goes into play here as it groups up the data in small lists
+        of two, puts them into the new variable and then resets itself for the next pair of
+        numbers to be read. The variables that do not need this specific altering instead
+        read each line individually and places them inside the code, exeption being the
+        previousState as it only needs one line to read.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+        
         '''
             
         # Reset the variables to be read into
         redPiece = []
         redStatus = []
+        redKing = []
         blackPiece = []
         blackStatus = []
+        blackKing = []
         
         
         #-Coordinate Reading-
@@ -298,7 +397,7 @@ def main():
         #-Status Reading-
         # Read the red status
         redStatFile = open('last_game_info/redPieceStatus.txt', 'r')
-        while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
+        while True: # Forever while loop until there is nothing left to read in file
             theLine = redStatFile.readline()
             theLine = theLine.strip('\n')
             if len(theLine) == 0: #If there is nothing on the line, break
@@ -308,7 +407,7 @@ def main():
         redStatFile.close()
         # Read the black status
         blackStatFile = open('last_game_info/blackPieceStatus.txt', 'r')
-        while True: # Forever while loop until there is nothing left to read in file (see the if len(theLine) statement)
+        while True: # Forever while loop until there is nothing left to read in file
             theLine = blackStatFile.readline()
             theLine = theLine.strip('\n')
             if len(theLine) == 0: #If there is nothing on the line, break
@@ -317,13 +416,36 @@ def main():
             blackStatus.append(theLine) # Add the line to the blackStatus
         blackStatFile.close()
         
+        #-King Reading-
+        # Read the red king values
+        redKingFile = open('last_game_info/redKing.txt', 'r')
+        while True: # Forever while loop until there is nothing left to read in file
+            theLine = redKingFile.readline()
+            theLine = theLine.strip('\n')
+            if len(theLine) == 0: #If there is nothing on the line, break
+                break
+            
+            redKing.append(theLine) # Add the line to redKing
+        redKingFile.close
+        
+        # Read the black king values
+        blackKingFile = open('last_game_info/blackKing.txt', 'r')
+        while True: # Forever while loop until there is nothing left to read in file
+            theLine = blackKingFile.readline()
+            theLine = theLine.strip('\n')
+            if len(theLine) == 0: #If there is nothing on the line, break
+                break
+            
+            blackKing.append(theLine) # Add the line to blackKing
+        blackKingFile.close
+        
         #-Other File Reading-
         # Read the previous program state
         prevStateFile = open('last_game_info/previousGameState.txt', 'r')
         previousState = prevStateFile.readline()
         prevStateFile.close()
         
-        return blackPiece, redPiece, blackStatus, redStatus, previousState
+        return blackPiece, redPiece, blackStatus, redStatus, blackKing, redKing, previousState
     
     def writeInfo():
         '''
@@ -331,8 +453,8 @@ def main():
         text files.
         
         Function that overwrites the last known values of the black coords, red coords,
-        the red status, the black status and the previous program state. Uses for loops
-        that run for eight times for all writes that require eight different pairs of
+        the red status, the black status and the previous program state. Use a for loop
+        that runs for eight times for all writes that require eight different pairs of
         numbers (with the exception of the previous program state).
         
         Parameters
@@ -343,26 +465,33 @@ def main():
         -------
         None
         '''
-        # Write reset version of red coordinates
+        # Open the red files
         redCoordFile = open('last_game_info/redPieceCoordinates.txt', 'w')
+        redStatFile = open('last_game_info/redPieceStatus.txt', 'w')
+        redKingFile = open('last_game_info/redKing.txt', 'w')
+        # Open the black files
+        blackCoordFile = open('last_game_info/blackPieceCoordinates.txt', 'w')
+        blackStatFile = open('last_game_info/blackPieceStatus.txt', 'w')
+        blackKingFile = open('last_game_info/blackKing.txt', 'w')
+        
         for i in range(0, 8, 1):
             redCoordFile.write(f'{redPiece[i][0]}\n{redPiece[i][1]}\n')
-        redCoordFile.close()
-        # Write reset version of black coordinates
-        blackCoordFile = open('last_game_info/blackPieceCoordinates.txt', 'w')
-        for i in range(0, 8, 1):
-            blackCoordFile.write(f'{blackPiece[i][0]}\n{blackPiece[i][1]}\n')
-        blackCoordFile.close()
-        # Write reset version of red status list
-        redStatFile = open('last_game_info/redPieceStatus.txt', 'w')
-        for i in range(0, 8, 1):
             redStatFile.write(f'{redStatus[i]}\n')
-        redStatFile.close()
-        # Write reset version of black status list
-        blackStatFile = open('last_game_info/blackPieceStatus.txt', 'w')
-        for i in range(0, 8, 1):
+            redKingFile.write(f'{redKing[i]}\n')
+            blackCoordFile.write(f'{blackPiece[i][0]}\n{blackPiece[i][1]}\n')
             blackStatFile.write(f'{blackStatus[i]}\n')
+            blackKingFile.write(f'{blackKing[i]}\n')
+        
+        # Close the red files
+        redCoordFile.close()
+        redStatFile.close()
+        redKingFile.close()
+        # Close the black Files
+        blackCoordFile.close()
         blackStatFile.close()
+        blackKingFile.close()
+        # Write reset version of black king
+        
         # Write reset version of programState
         prevStateFile = open('last_game_info/previousGameState.txt', 'w')
         prevStateFile.write(previousState)
@@ -375,6 +504,21 @@ def main():
     
     class button(): #Class object for tiles and buttons
         def __init__(self, inputColour, inputRect):
+            '''
+            Initializes the button and its variables for the program to draw from.
+            
+            Parameters
+            ----------
+            inputColour : (float, float, float)
+                the inputed colour values for the button
+            inputRect : [int, int, int, int]
+                list of ints to identify the rectangle of the button
+            
+            Returns
+            -------
+            None
+            
+            '''
             self.rect = inputRect
             self.colour = inputColour
             
@@ -390,6 +534,7 @@ def main():
             Returns
             -------
             None
+            
             '''
             pygame.draw.rect(inputSurface, self.colour, self.rect)
             
@@ -412,7 +557,8 @@ def main():
             Returns
             -------
             boolean
-                The statement regarding if the button was clicked or not
+                the statement regarding if the button was clicked or not
+                
             '''
             if inPnt[0] > self.rect[0] and inPnt[0] < self.rect[0]+self.rect[2] and inPnt[1] < self.rect[1]+self.rect[3] and inPnt[1] > self.rect[1]:#Is the inpt colliding with button?
                 if ev.type == pygame.MOUSEBUTTONDOWN: #Is there a mouse event?
@@ -423,6 +569,20 @@ def main():
     
     class tile(): #Class object for tiles and buttons
         def __init__(self, inputColour, inputRect):
+            '''
+            Initializes the tile and its variables for the program to draw from.
+            
+            Parameters
+            ----------
+            inputColour : (float, float, float)
+                the inputed colour values for the button
+            inputRect : [int, int, int, int]
+                list of ints to identify the rectangle of the button
+            
+            Returns
+            -------
+            None
+            '''
             self.rect = inputRect
             self.colour = inputColour
         
@@ -490,12 +650,14 @@ def main():
             # Update your game objects and data structures here...
             
             #---Reading Files---
-            if readingFiles == True: # If statement that runs only once, declares variables to be set to the ones retunred in the readInfo function
+            if readingFiles == True: # If statement that runs only once, declares variables to be set to the ones retunred in the readInfo function (with their respective indexes)
                 blackPiece = readInfo()[0]
                 redPiece = readInfo()[1]
                 blackStatus = readInfo()[2]
                 redStatus = readInfo()[3]
-                previousState = readInfo()[4]
+                blackKing = readInfo()[4]
+                redKing = readInfo()[5]
+                previousState = readInfo()[6]
                 readingFiles = False # Stop this if statement from running over and over again in the menu to prevent lag
             #-------------------
                 
@@ -566,7 +728,7 @@ def main():
             mainSurface.blit(renderedHelpTitle, (100, 100))
             mainSurface.blit(renderedBack, (615, 655))
             
-            mainSurface.blit(helpMenu, (90, 190)) # Draw the help menu png
+            mainSurface.blit(helpMenu, (80, 210)) # Draw the help menu png
         
         elif programState == 'Pause Menu':
             # Update your game objects and data structures here...
@@ -585,8 +747,6 @@ def main():
                 #-File Writing-
                 writeInfo()
                 
-                #-------------
-                
             #-----Drawing-----
             # So first fill everything with the background color
             mainSurface.fill((0, 0, 0))
@@ -604,7 +764,7 @@ def main():
         elif programState == 'Player 1 Turn':
             # Update your game objects and data structures here...
             
-            kingCheck()
+            kingCheck() # Check if any pieces are eligible to be a king piece
             
             if deadCheck() == 'Player 1 is dead': # Check if player 1's pieces are dead, end game if so
                 programState = 'End Screen'
@@ -615,9 +775,9 @@ def main():
             
             renderedTurnShow = buttonFont.render("Player 1's Turn", True, white)
             
-            if ev.type == pygame.KEYUP:
-                previousState = programState
-                if ev.scancode == 41:
+            if ev.type == pygame.KEYDOWN: # If a key was pressed
+                if ev.scancode == 41: # If the key was the esc key, record the programState and go to pause menu
+                    previousState = programState
                     programState = 'Pause Menu'
             
             if ev.type == pygame.MOUSEBUTTONDOWN: # Is there a mouse event
@@ -640,17 +800,17 @@ def main():
                         if rightMove(-1, blackPiece, blackStatus, redPiece, redStatus, 'e') == True: # If the rightMove function allows a black piece to move, change programState
                             programState = 'Player 2 Turn'
                             
-                        blackColour[selectedIndex] = black
+                        blackColour[selectedIndex] = black # Reset the colour of the piece and the pieceChosen variable
                         pieceChosen = False
                             
-                    if blackPiece[selectedIndex][1] < 7: #If the piece is not at the bottom of the screen
-                        if blackKing[selectedIndex] == 'King':
-                            if leftMove(1, blackPiece, blackStatus, redPiece, redStatus, 'a') == True:
+                    if blackPiece[selectedIndex][1] < 7: # If the piece is not at the bottom of the screen
+                        if blackKing[selectedIndex] == 'King': # If the selected index has the characteristic 'King' in its king variable
+                            if leftMove(1, blackPiece, blackStatus, redPiece, redStatus, 'a') == True: # If the leftMove function allows a black piece to move (in the opposite direction than a regular movement), change programState
                                 programState = 'Player 2 Turn'
-                            if rightMove(1, blackPiece, blackStatus, redPiece, redStatus, 'd') == True:
+                            if rightMove(1, blackPiece, blackStatus, redPiece, redStatus, 'd') == True: # If the rightMove function allows a black piece to move (in the opposite direction than a regular movement), change programState
                                 programState = 'Player 2 Turn'
                         
-                            blackColour[selectedIndex] = black
+                            blackColour[selectedIndex] = black # Reset the colour of the piece and the pieceChosen variable
                             pieceChosen = False
                         
                         
@@ -692,9 +852,9 @@ def main():
             
             renderedTurnShow = buttonFont.render("Player 2's Turn", True, red)
             
-            if ev.type == pygame.KEYUP:
-                previousState = programState
-                if ev.scancode == 41:
+            if ev.type == pygame.KEYDOWN: # If a key was pressed
+                if ev.scancode == 41: # If the key was the esc key, record the programState and go to pause menu
+                    previousState = programState
                     programState = 'Pause Menu'
             
             if ev.type == pygame.MOUSEBUTTONDOWN: # Is there a mouse event
@@ -717,17 +877,17 @@ def main():
                         if rightMove(1, redPiece, redStatus, blackPiece, blackStatus, 'd') == True: # If the right Move function allows a red piece to move, change programState
                             programState = 'Player 1 Turn'
                             
-                        redColour[selectedIndex] = red
+                        redColour[selectedIndex] = red # Reset the colour of the piece and the pieceChosen variable
                         pieceChosen = False
                     
-                    if redPiece[selectedIndex][1] > 0: #If the piece is not at the top of the screen
-                        if redKing[selectedIndex] == 'King':
-                            if leftMove(-1, redPiece, redStatus, blackPiece, blackStatus, 'q') == True:
+                    if redPiece[selectedIndex][1] > 0: # If the piece is not at the top of the screen
+                        if redKing[selectedIndex] == 'King': # If the selected index has the characteristic 'King' in its king variable
+                            if leftMove(-1, redPiece, redStatus, blackPiece, blackStatus, 'q') == True: # If the leftMove function allows a red piece to move (in the opposite direction than a regular movement), change programState
                                 programState = 'Player 1 Turn'
-                            if rightMove(-1, redPiece, redStatus, blackPiece, blackStatus, 'e') == True:
+                            if rightMove(-1, redPiece, redStatus, blackPiece, blackStatus, 'e') == True: # If the rightMove function allows a red piece to move (in the opposite direction than a regular movement), change programState
                                 programState = 'Player 1 Turn'
                         
-                            redColour[selectedIndex] = red
+                            redColour[selectedIndex] = red # Reset the colour of the piece and the pieceChosen variable
                             pieceChosen = False
                 
             
@@ -757,11 +917,16 @@ def main():
         elif programState == 'End Screen':
             # Update your game objects and data structures here...
                 
-            # Reset variables so last game will be overwritten
+            # Reset variables so last game will be overwritten (when a player wins, the save is reset to a new game)
             redPiece = [ [0, 0,], [2, 0], [4, 0], [6, 0], [1, 1], [3, 1], [5, 1], [7, 1] ]
             redStatus = [ 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive']
+            redKing = ['Notking', 'NotKing', 'NotKing', 'NotKing', 'NotKing', 'NotKing', 'NotKing', 'NotKing']
+            redColour = [red, red, red, red, red, red, red, red]
             blackPiece = [ [0, 6], [2, 6], [4, 6], [6, 6], [1, 7], [3, 7], [5, 7], [7, 7] ]
             blackStatus = [ 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive', 'Alive']
+            blackKing = ['Notking', 'NotKing', 'NotKing', 'NotKing', 'NotKing', 'NotKing', 'NotKing', 'NotKing']
+            blackColour = [black, black, black, black, black, black, black, black]
+            previousState = 'Player 1 Turn'
             
             writeInfo() # Write the game info using the writeInfo function
             
