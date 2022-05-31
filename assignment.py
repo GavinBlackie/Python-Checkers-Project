@@ -1,23 +1,30 @@
 #-----------------------------------------------------------------------------
-# Name:        Assignment Template (assignment.py)
+# Name:        Checkers!
 # Purpose:     A description of your program goes here.
 #
 # Author:      Gavin B.
 # Created:     04-May-2022
-# Updated:     30-May-2022
+# Updated:     31-May-2022
 #-----------------------------------------------------------------------------
 #I think this project deserves a level XXXXXX because ...
 #
+#
+#
+#
 #Features Added:
-#   ...
-#   ...
-#   ...
+#
+#   - Interactable and moveable pieces for both black and red teams
+#   - Jumping and killing, pieces will jump over the opposite teams pieces if the conditions are right
+#   - King pieces: when a piece on a team reaches the end of the board, they are granted the ability to move backwards as well as forwards
+#   - Functioning main menu and help menu that the player can go back and forth from without restarting game
+#   - Pausing, continuing and game saving as games can be saved and continued inside the program as well as outside the program, when a user stops then
+#     starts the program they can start from where they left off from or even start a new game altogether
 #-----------------------------------------------------------------------------
 
 import pygame
 import math
 
-def distFromPoints(point1, point2): # Function from python lessons, used for circle collision detection in relation to the pieces
+def distFromPoints(point1, point2): # Function from python lesson on collision detection, used for circle collision detection in relation to the pieces
     '''
     This function calculationes the distance between two points given by a set of tuples (x1,y1) and (x2,y2)
     
@@ -43,8 +50,6 @@ def main():
     
     clock = pygame.time.Clock()  #Force frame rate to be slower
     
-    frameCount = 0
-    
     # Create surface of (width, height), and its window.
     mainSurface = pygame.display.set_mode((surfaceSize, surfaceSize))
     
@@ -62,7 +67,6 @@ def main():
     red = (255, 0, 0)
     yellow = (229, 255, 0)
     green = (0, 255, 0)
-    
     goldBrown = (155, 114, 0)
     
     #Tile Variables
@@ -71,7 +75,7 @@ def main():
     tileHeight = 72
     tileShift = False
     
-    #Fonts and Text
+    #Fonts
     titleFont = pygame.font.SysFont("Times New Roman", 65)
     buttonFont = pygame.font.SysFont("Times New Roman", 26)
     
@@ -161,11 +165,11 @@ def main():
                 
                 for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
                     if teamStatus[i] == 'Alive':
-                        if teamPiece[i][0] == (teamPiece[selectedIndex][0]-1) and teamPiece[i][1] == (teamPiece[selectedIndex][1]+upDown): #Check for a black piece to the top left
+                        if teamPiece[i][0] == (teamPiece[selectedIndex][0]-1) and teamPiece[i][1] == (teamPiece[selectedIndex][1]+upDown): # Check for a black piece to the top left
                             canMove = False
                         
                     if enemyStatus[i] == 'Alive':
-                        if enemyPiece[i][0] == (teamPiece[selectedIndex][0]-1) and enemyPiece[i][1] == (teamPiece[selectedIndex][1]+upDown):#Check for a red piece to the top left
+                        if enemyPiece[i][0] == (teamPiece[selectedIndex][0]-1) and enemyPiece[i][1] == (teamPiece[selectedIndex][1]+upDown):# Check for a red piece to the top left
                             enemyPieceInWay = True
                             enemyIndex = i #Temp record the index of the enemy piece (in the case it needs to be killed)
                             
@@ -241,11 +245,11 @@ def main():
                 
                 for i in range(0, 8, 1): # Do this 8 times, number of piece indexes for red and black pieces
                     if teamStatus[i] == 'Alive':
-                        if teamPiece[i][0] == (teamPiece[selectedIndex][0]+1) and teamPiece[i][1] == (teamPiece[selectedIndex][1]+upDown): #Check for a team piece to the top right  
+                        if teamPiece[i][0] == (teamPiece[selectedIndex][0]+1) and teamPiece[i][1] == (teamPiece[selectedIndex][1]+upDown): # Check for a team piece to the top right  
                             canMove = False
                     
                     if enemyStatus[i] == 'Alive':
-                        if enemyPiece[i][0] == (teamPiece[selectedIndex][0]+1) and enemyPiece[i][1] == (teamPiece[selectedIndex][1]+upDown):#Check for a enemy piece to the top right
+                        if enemyPiece[i][0] == (teamPiece[selectedIndex][0]+1) and enemyPiece[i][1] == (teamPiece[selectedIndex][1]+upDown):# Check for a enemy piece to the top right
                             enemyPieceInWay = True
                             enemyIndex = i #Temp record the index of the enemy piece (in the case it needs to be killed)
                             
@@ -317,12 +321,37 @@ def main():
         None
         
         '''
-        
         for i in range(0, 8, 1):
             if blackPiece[i][1] <= 0:
                 blackKing[i] = 'King'
             if redPiece[i][1] >= 7:
                 redKing[i] = 'King'
+    
+    def drawKing(teamPiece, inputIndex):
+        '''
+        Draws the aesthetics of the king pieces using the inputed info on that piece's team as well as the
+        index of the piece that needs the crown to be drawn ontop of.
+        
+        Parameters
+        ----------
+        teamPiece : [list, list, list, list, list, list, list, list]
+            list of lists that contain the pair of numbers corresponding to the set of pieces on the specified team
+        inputIndex : int
+            the index of the piece to have a crown drawn upon them
+            
+        
+        Returns
+        -------
+        None
+        
+            
+        '''
+        # Draw commands use triple list [][][] to find the exact tuple in the board list in order to change the x and y of the rects individually
+        pygame.draw.rect(mainSurface, yellow, ( board[teamPiece[inputIndex][1]][teamPiece[inputIndex][0]] [0]-10, board[teamPiece[inputIndex][1]][teamPiece[inputIndex][0]] [1], 20, 5) )
+        pygame.draw.rect(mainSurface, yellow, ( board[teamPiece[inputIndex][1]][teamPiece[inputIndex][0]] [0]-10, board[teamPiece[inputIndex][1]][teamPiece[inputIndex][0]] [1]-5, 4, 5) )
+        pygame.draw.rect(mainSurface, yellow, ( board[teamPiece[inputIndex][1]][teamPiece[inputIndex][0]] [0]-2, board[teamPiece[inputIndex][1]][teamPiece[inputIndex][0]] [1]-5, 4, 5) )
+        pygame.draw.rect(mainSurface, yellow, ( board[teamPiece[inputIndex][1]][teamPiece[inputIndex][0]] [0]+6, board[teamPiece[inputIndex][1]][teamPiece[inputIndex][0]] [1]-5, 4, 5) )
+        
         
     def readInfo():
         '''
@@ -426,7 +455,7 @@ def main():
                 break
             
             redKing.append(theLine) # Add the line to redKing
-        redKingFile.close
+        redKingFile.close()
         
         # Read the black king values
         blackKingFile = open('last_game_info/blackKing.txt', 'r')
@@ -437,7 +466,7 @@ def main():
                 break
             
             blackKing.append(theLine) # Add the line to blackKing
-        blackKingFile.close
+        blackKingFile.close()
         
         #-Other File Reading-
         # Read the previous program state
@@ -635,16 +664,11 @@ def main():
             
     
     while True:
-        #print(f'Program Ticks: {pygame.time.get_ticks()} - frameCount: {frameCount} - programState: {programState}')
         ev = pygame.event.poll()    # Look for any event
         if ev.type == pygame.QUIT:  # Window close button clicked?
             break                   #   ... leave game loop
         
         mousePos = pygame.mouse.get_pos()#Mouse position for buttons
-        
-        frameCount+=1
-        if frameCount >= 60:
-            frameCount -= 60
         
         if programState == 'Start Menu':
             # Update your game objects and data structures here...
@@ -685,7 +709,8 @@ def main():
             elif helpButton.buttonCollidePoint(mousePos) == True: # Check if the help button has been pressed, if so go to the help menu
                 programState = 'Help Menu'
                 
-            elif exitButton.buttonCollidePoint(mousePos) == True: # If the Exit button has been pressed, break (just an alternative to the top right "X")
+            elif exitButton.buttonCollidePoint(mousePos) == True: # If the Exit button has been pressed, save info (more as a precaution) and exit
+                writeInfo()
                 break
             
             #-----Drawing-----
@@ -830,18 +855,18 @@ def main():
                 if redStatus[i] == 'Alive': # Check if the piece is alive
                     pygame.draw.circle(mainSurface, redColour[i], board[redPiece[i][1]][redPiece[i][0]], pieceRadius)
                     if redKing[i] == 'King': # Draw king details if piece has 'King' characteristic
-                        pygame.draw.rect(mainSurface, yellow, ( board[redPiece[i][1]][redPiece[i][0]][0]-10, board[redPiece[i][1]][redPiece[i][0]][1]-5, 20, 10))
+                        drawKing(redPiece, i)
             for i in range(0, 8, 1): # Draw black pieces
                 if blackStatus[i] == 'Alive': # Check if the piece is alive
                     pygame.draw.circle(mainSurface, blackColour[i], board[blackPiece[i][1]][blackPiece[i][0]], pieceRadius)
                     if blackKing[i] == 'King': # Draw king details if piece has 'King' characteristic
-                        pygame.draw.rect(mainSurface, yellow, ( board[blackPiece[i][1]][blackPiece[i][0]][0]-10, board[blackPiece[i][1]][blackPiece[i][0]][1]-5, 20, 10))
+                        drawKing(blackPiece, i)
         
         
         elif programState == 'Player 2 Turn':
             # Update your game objects and data structures here...
             
-            kingCheck()
+            kingCheck() # Check if any pieces are eligible to be a king piece
             
             if deadCheck() == 'Player 1 is dead': # Check if player 1's pieces are dead, end game if so
                 programState = 'End Screen'
@@ -906,12 +931,12 @@ def main():
                 if redStatus[i] == 'Alive': # Check if the piece is alive
                     pygame.draw.circle(mainSurface, redColour[i], board[redPiece[i][1]][redPiece[i][0]], pieceRadius)
                     if redKing[i] == 'King': # Draw king details if piece has 'King' characteristic
-                        pygame.draw.rect(mainSurface, yellow, ( board[redPiece[i][1]][redPiece[i][0]][0]-10, board[redPiece[i][1]][redPiece[i][0]][1]-5, 20, 10))
+                        drawKing(redPiece, i)
             for i in range(0, len(blackPiece), 1): # Draw black pieces
                 if blackStatus[i] == 'Alive': # Check if the piece is alive
                     pygame.draw.circle(mainSurface, blackColour[i], board[blackPiece[i][1]][blackPiece[i][0]], pieceRadius)
                     if blackKing[i] == 'King': # Draw king details if piece has 'King' characteristic
-                        pygame.draw.rect(mainSurface, yellow, ( board[blackPiece[i][1]][blackPiece[i][0]][0]-10, board[blackPiece[i][1]][blackPiece[i][0]][1]-5, 20, 10))
+                        drawKing(blackPiece, i)
             
             
         elif programState == 'End Screen':
