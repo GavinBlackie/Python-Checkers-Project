@@ -1,15 +1,28 @@
 #-----------------------------------------------------------------------------
 # Name:        Checkers!
-# Purpose:     A description of your program goes here.
+# Purpose:     A program that provides an enjoyable experience of the game checkers for the user(s)
 #
 # Author:      Gavin B.
 # Created:     04-May-2022
-# Updated:     31-May-2022
+# Updated:     01-Jun-2022
 #-----------------------------------------------------------------------------
-#I think this project deserves a level XXXXXX because ...
+#I think this project deserves a level 4 because ...
 #
-#
-#
+#  - The program does not have any major errors, I am confident that there are none after constant testing of the program
+#  - The user input is fairly simplistic, the user uses the mouse to click things, four keys chosen to make a diagonal
+#    layout in order to move pieces as well as the escape button to pause/return to start menu
+#  - Diffrent variable types are used throughout the program as well as lots of conditional structures, ex. for loops, if statements
+#  - Custom functions and functions in general are used throughout the program
+#  - Lists are extensively used in the program
+#  - Program both reads and writes to multiple files, it reads the previous game data and writes the current data in order to create
+#    the continuing and save features
+#  - There is a laid out start, game and end screens shown by the "If programState == ___:" statments
+#  - Loads of comments are present throughout the program as well as the proper documentation for functions
+#  - The code is efficient in my opinion but still could be improved for what it does, ex. the movement functions save about 4 times their
+#    respective line lengths each, however I see potential to combine them into one big function that controls all movements in the game
+#  - The input and output of the program is sanitized, if you mash the keyboard in a game it will not crash as it will only do what it is
+#    supposed to when given the correct input
+#  - Program is modular, a great deal of it is divided across multiple functions that are called upon in their respective programStates
 #
 #Features Added:
 #
@@ -158,7 +171,7 @@ def main():
         
         '''
         if ev.unicode == inputMethod: # Check for input
-            if teamPiece[selectedIndex][0]-1 >= 0: # If the tile is not on the left edge
+            if teamPiece[selectedIndex][0]-1 >= 0: # If the tile to the left is not off the screen
                 canMove = True
                 farSideBlocked = False
                 enemyPieceInWay = False
@@ -180,10 +193,10 @@ def main():
                                     farSideBlocked = True
                             
                             canMove = False
-                
+                            
                 if farSideBlocked == False and enemyPieceInWay == True: # If the jump is not blocked and an enemy is in the way
-                    if (teamPiece[selectedIndex][0]+2) >= 0:
-                        if (teamPiece[selectedIndex][1]+(2*upDown)) != 8:
+                    if (teamPiece[selectedIndex][0]-2) != -1:
+                        if (teamPiece[selectedIndex][1]+(2*upDown)) != -1 and (teamPiece[selectedIndex][1]+(2*upDown)) != 8:
                             teamPiece[selectedIndex][1] += 2*upDown
                             teamPiece[selectedIndex][0] -= 2
                             enemyStatus[enemyIndex] = 'Dead' # Kill the enemy piece
@@ -194,12 +207,7 @@ def main():
                     teamPiece[selectedIndex][1] += upDown
                     teamPiece[selectedIndex][0] -= 1
                     return True 
-                else:
-                    return False
-            else:
-                return False            
-        else:
-            return False
+        return False
            
     #---------------Right Side Movement--------------
     def rightMove(upDown, teamPiece, teamStatus, enemyPiece, enemyStatus, inputMethod):
@@ -238,7 +246,7 @@ def main():
         
         '''             
         if ev.unicode == inputMethod: # Check for input
-            if teamPiece[selectedIndex][0]+1 <= 7: # If the tile is not on the right edge
+            if teamPiece[selectedIndex][0]+1 <= 7: # If the tile to the right is not off the screen
                 canMove = True
                 farSideBlocked = False
                 enemyPieceInWay = False
@@ -262,8 +270,8 @@ def main():
                             canMove = False
                         
                 if farSideBlocked == False and enemyPieceInWay == True:
-                    if (teamPiece[selectedIndex][0]+2) <= 7:
-                        if (teamPiece[selectedIndex][1]+(2*upDown)) != 8:
+                    if (teamPiece[selectedIndex][0]+2) != 8:
+                        if (teamPiece[selectedIndex][1]+(2*upDown)) != -1 and (teamPiece[selectedIndex][1]+(2*upDown)) != 8:
                             teamPiece[selectedIndex][1] += 2*upDown
                             teamPiece[selectedIndex][0] += 2
                             enemyStatus[enemyIndex] = 'Dead' # Kill the enemy piece
@@ -274,12 +282,7 @@ def main():
                     teamPiece[selectedIndex][1] += upDown
                     teamPiece[selectedIndex][0] += 1
                     return True
-                else:
-                    return False
-            else:
-                return False
-        else:
-            return False
+        return False
     
     def deadCheck():
         '''
@@ -343,8 +346,7 @@ def main():
         Returns
         -------
         None
-        
-            
+                    
         '''
         # Draw commands use triple list [][][] to find the exact tuple in the board list in order to change the x and y of the rects individually
         pygame.draw.rect(mainSurface, yellow, ( board[teamPiece[inputIndex][1]][teamPiece[inputIndex][0]] [0]-10, board[teamPiece[inputIndex][1]][teamPiece[inputIndex][0]] [1], 20, 5) )
@@ -352,6 +354,34 @@ def main():
         pygame.draw.rect(mainSurface, yellow, ( board[teamPiece[inputIndex][1]][teamPiece[inputIndex][0]] [0]-2, board[teamPiece[inputIndex][1]][teamPiece[inputIndex][0]] [1]-5, 4, 5) )
         pygame.draw.rect(mainSurface, yellow, ( board[teamPiece[inputIndex][1]][teamPiece[inputIndex][0]] [0]+6, board[teamPiece[inputIndex][1]][teamPiece[inputIndex][0]] [1]-5, 4, 5) )
         
+    def drawPieces():
+        '''
+        Function that draws the pieces and their details.
+        
+        Runs a for loop eight times, the number of pieces on each side, then checks if
+        a piece is alive, if so it draws that piece with that index on that team. In the
+        case that the corresponding index also has the characteristic of "King" in their
+        respective king variable list, it draws the crown using the drawKing function.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+        
+        '''
+        
+        for i in range(0, 8, 1): # Run draw loop 8 times, number of pieces on each side
+            if redStatus[i] == 'Alive': # Check if the piece is alive
+                pygame.draw.circle(mainSurface, redColour[i], board[redPiece[i][1]][redPiece[i][0]], pieceRadius)
+                if redKing[i] == 'King': # Draw king details if piece has 'King' characteristic
+                    drawKing(redPiece, i)
+            if blackStatus[i] == 'Alive': # Check if the piece is alive
+                pygame.draw.circle(mainSurface, blackColour[i], board[blackPiece[i][1]][blackPiece[i][0]], pieceRadius)
+                if blackKing[i] == 'King': # Draw king details if piece has 'King' characteristic
+                    drawKing(blackPiece, i)
         
     def readInfo():
         '''
@@ -644,7 +674,7 @@ def main():
     pauseMainMenu = button(red, [160, 425, 400, 50])
     endBackButton = button(red, [180, 440, 360, 60])
     
-    #--Tiles--
+    #--Tile Loading--
     
     tiles = [] # List of tiles/tile information for the program to draw from
 
@@ -851,16 +881,8 @@ def main():
             
             for i in range(0, len(tiles), 1): # Draw grey tiles
                 tiles[i].drawTile(mainSurface)
-            for i in range(0, 8, 1): # Draw red pieces
-                if redStatus[i] == 'Alive': # Check if the piece is alive
-                    pygame.draw.circle(mainSurface, redColour[i], board[redPiece[i][1]][redPiece[i][0]], pieceRadius)
-                    if redKing[i] == 'King': # Draw king details if piece has 'King' characteristic
-                        drawKing(redPiece, i)
-            for i in range(0, 8, 1): # Draw black pieces
-                if blackStatus[i] == 'Alive': # Check if the piece is alive
-                    pygame.draw.circle(mainSurface, blackColour[i], board[blackPiece[i][1]][blackPiece[i][0]], pieceRadius)
-                    if blackKing[i] == 'King': # Draw king details if piece has 'King' characteristic
-                        drawKing(blackPiece, i)
+            
+            drawPieces() # Run the draw pieces function
         
         
         elif programState == 'Player 2 Turn':
@@ -927,16 +949,8 @@ def main():
             
             for i in range(0, len(tiles), 1): # Draw grey tiles
                 tiles[i].drawTile(mainSurface)
-            for i in range(0, 8, 1): # Draw red pieces
-                if redStatus[i] == 'Alive': # Check if the piece is alive
-                    pygame.draw.circle(mainSurface, redColour[i], board[redPiece[i][1]][redPiece[i][0]], pieceRadius)
-                    if redKing[i] == 'King': # Draw king details if piece has 'King' characteristic
-                        drawKing(redPiece, i)
-            for i in range(0, len(blackPiece), 1): # Draw black pieces
-                if blackStatus[i] == 'Alive': # Check if the piece is alive
-                    pygame.draw.circle(mainSurface, blackColour[i], board[blackPiece[i][1]][blackPiece[i][0]], pieceRadius)
-                    if blackKing[i] == 'King': # Draw king details if piece has 'King' characteristic
-                        drawKing(blackPiece, i)
+            
+            drawPieces() # Run the draw pieces function
             
             
         elif programState == 'End Screen':
